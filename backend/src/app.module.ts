@@ -12,6 +12,7 @@ import { EmailModule } from "./modules/email/email.module";
 import emailConfig from "./config/email.config";
 import { FilesModule } from "./modules/files/files.module";
 import { HealthModule } from "./modules/health/health.module";
+import { ProfileModule } from "./modules/profile/profile.module";
 import { RequestIdMiddleware } from "./common/middleware/request-id.middleware";
 
 @Module({
@@ -56,6 +57,7 @@ import { RequestIdMiddleware } from "./common/middleware/request-id.middleware";
     EmailModule,
     FilesModule,
     HealthModule,
+    ProfileModule,
   ],
   providers: [
     {
