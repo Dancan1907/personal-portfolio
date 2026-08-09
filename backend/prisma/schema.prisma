@@ -1,4 +1,9 @@
-// backend/prisma/schema.prisma
+// ============================================
+// DATABASE SCHEMA - PERSONAL PORTFOLIO
+// ============================================
+// This schema defines all models for the portfolio management system
+// It extends the base template with portfolio-specific models
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +12,10 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// ============================================
+// USER & AUTH MODELS (Existing)
+// ============================================
 
 model User {
   id           String   @id @default(cuid())
@@ -17,7 +26,7 @@ model User {
   role         Role     @default(USER)
   isActive     Boolean  @default(true)
   emailVerified Boolean @default(false)
-  refreshToken String?  @unique   // <-- NEW: stores the current valid refresh token
+  refreshToken String?  @unique   // stores the current valid refresh token
 
   // Email verification fields
   verificationToken      String?  @unique
@@ -27,7 +36,7 @@ model User {
   resetToken      String?  @unique
   resetTokenExpiry DateTime?
   
- // 2FA fields
+  // 2FA fields
   twoFactorSecret    String?   // Base32 secret for TOTP
   isTwoFactorEnabled Boolean   @default(false)
   backupCodes        String?   // JSON array of hashed backup codes
@@ -35,6 +44,11 @@ model User {
   // Audit log relation (opposite side of AuditLog.user)
   auditLogs    AuditLog[]
 
+  // ============================================
+  // NEW: Portfolio Relations
+  // ============================================
+  profile      Profile?  // One-to-one with Profile (portfolio owner)
+  
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   deletedAt    DateTime? // Soft-delete marker; null = active, non-null = deleted
@@ -61,4 +75,195 @@ model AuditLog {
 enum Role {
   ADMIN
   USER
+}
+
+// ============================================
+// PORTFOLIO MODELS (NEW)
+// ============================================
+
+// PROFILE - Stores professional information about the portfolio owner
+// One-to-one relationship with User (each user has one profile)
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique  // Ensures one profile per user
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Professional details
+  name        String   // Full name (can differ from User.name)
+  title       String?  // Professional title, e.g., "Full Stack Developer"
+  bio         String?  @db.Text  // Biography or about text
+  avatarUrl   String?  // Profile picture URL
+  resumeUrl   String?  // Link to resume PDF
+  
+  // Social Media Links
+  githubUrl   String?
+  linkedinUrl String?
+  twitterUrl  String?
+  websiteUrl  String?
+  
+  // Contact Information
+  email       String?  // Public email (can differ from login email)
+  location    String?  // City, Country
+  phone       String?  // Phone number (optional)
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// SKILL - Technical skills organized by category
+// Used to display skills on the portfolio
+model Skill {
+  id          String   @id @default(cuid())
+  category    String   // Category: "Frontend", "Backend", "DevOps", "Tools", etc.
+  name        String   // Skill name: "React", "Node.js", "Docker", etc.
+  icon        String?  // Lucide icon name or URL to icon image
+  proficiency Int?     // Proficiency level: 1-5 or percentage
+  
+  // Sorting and display
+  order       Int      @default(0)  // Controls display order
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Ensures no duplicate skills in same category
+  @@unique([category, name])
+  @@index([category])  // Optimizes queries filtering by category
+}
+
+// PROJECT - Portfolio projects with detailed information
+model Project {
+  id          String   @id @default(cuid())
+  title       String   // Project title
+  slug        String   @unique  // URL-friendly version of title (e.g., "my-awesome-project")
+  description String?  @db.Text  // Brief description
+  problem     String?  @db.Text  // What problem did this project solve?
+  solution    String?  @db.Text  // How was the problem solved?
+  challenge   String?  @db.Text  // What challenges were faced?
+  lessons     String?  @db.Text  // What lessons were learned?
+  
+  // Technical details
+  techStack   String[]  // Array of technologies used
+  features    String[]  // Array of key features
+  
+  // Links
+  demoUrl     String?   // Live demo URL
+  githubUrl   String?   // GitHub repository URL
+  
+  // Status
+  isFeatured  Boolean  @default(false)  // Show on homepage hero?
+  isPublished Boolean  @default(true)   // Publicly visible?
+  
+  // Relations
+  images      ProjectImage[]  // One-to-many with ProjectImage
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Indexes for common queries
+  @@index([slug])
+  @@index([isFeatured])
+  @@index([isPublished])
+}
+
+// PROJECT IMAGE - Images associated with a project
+model ProjectImage {
+  id          String   @id @default(cuid())
+  projectId   String   // Foreign key to Project
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Image details
+  url         String   // Image URL (CDN or uploaded)
+  alt         String?  // Alt text for accessibility
+  isCover     Boolean  @default(false)  // Primary image for the project
+  order       Int      @default(0)      // Display order
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+}
+
+// EXPERIENCE - Work experience entries
+model Experience {
+  id            String   @id @default(cuid())
+  role          String   // Job title: "Senior Developer", "Lead Engineer", etc.
+  organization  String   // Company or organization name
+  location      String?  // City, Country (optional)
+  
+  // Date range
+  startDate     DateTime
+  endDate       DateTime?
+  isPresent     Boolean  @default(false)  // Currently working here?
+  
+  // Description
+  description   String?  @db.Text  // Overview of the role
+  responsibilities String[]  // Array of responsibilities
+  technologies  String[]  // Technologies used in this role
+  achievements  String[]  // Key achievements or results
+  
+  // Display
+  order         Int      @default(0)  // Controls display order (newest first)
+  
+  // Metadata
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Index for sorting by date
+  @@index([startDate])
+}
+
+// EDUCATION - Education history entries
+model Education {
+  id            String   @id @default(cuid())
+  institution   String   // School or university name
+  degree        String   // Degree name: "BSc Computer Science", "MBA", etc.
+  field         String?  // Field of study: "Computer Science", "Business", etc.
+  location      String?  // City, Country (optional)
+  
+  // Date range
+  startDate     DateTime
+  endDate       DateTime?
+  isPresent     Boolean  @default(false)  // Currently studying?
+  
+  // Description
+  description   String?  @db.Text  // Overview of studies
+  coursework    String[]  // Relevant coursework
+  achievements  String[]  // Academic achievements, honors, etc.
+  gpa           String?   // GPA or grade (e.g., "3.8", "First Class")
+  
+  // Display
+  order         Int      @default(0)  // Controls display order (newest first)
+  
+  // Metadata
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Index for sorting by date
+  @@index([startDate])
+}
+
+// CONTACT MESSAGE - Messages from the contact form
+model ContactMessage {
+  id          String   @id @default(cuid())
+  name        String   // Sender's name
+  email       String   // Sender's email address
+  subject     String?  // Message subject
+  message     String   @db.Text  // Message content (required)
+  
+  // Status
+  isRead      Boolean  @default(false)  // Has admin read this?
+  replied     Boolean  @default(false)  // Has admin replied?
+  repliedAt   DateTime?  // When was the reply sent?
+  
+  // Anti-spam metadata
+  ipAddress   String?   // IP address of the sender
+  userAgent   String?   // Browser/device information
+  
+  // Metadata
+  createdAt   DateTime @default(now())
+  
+  // Indexes for filtering
+  @@index([isRead])
+  @@index([createdAt])
 }
