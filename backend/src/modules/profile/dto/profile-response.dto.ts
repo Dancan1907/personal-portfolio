@@ -1,8 +1,8 @@
 // ============================================
-// PROFILE RESPONSE DTO - API Response Format
+// PROFILE RESPONSE DTO - API Response Format (FIXED)
 // ============================================
-// This DTO ensures consistent response structure
-// It excludes sensitive data (userId is internal)
+// All fields use ? (optional) instead of | null
+// This matches Prisma's behavior where null becomes undefined
 
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
@@ -23,13 +23,13 @@ export class ProfileResponseDto {
     description: "Professional title",
     example: "Full Stack Developer",
   })
-  title?: string;
+  title?: string; // ← Changed from string | null to optional
 
   @ApiPropertyOptional({
     description: "Biography",
     example: "Passionate developer...",
   })
-  bio?: string;
+  bio?: string; // ← Changed from string | null to optional
 
   @ApiPropertyOptional({
     description: "Avatar image URL",
