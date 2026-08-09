@@ -1,8 +1,8 @@
 // ============================================
-// PROFILE CONTROLLER - API Endpoints
+// PROFILE CONTROLLER - API Endpoints (FIXED)
 // ============================================
-// This controller handles all HTTP requests related to profiles
-// All routes are protected with JWT authentication (except public ones)
+// All changes: Added proper types for Request parameter
+// Request is imported from express
 
 import {
   Controller,
@@ -14,6 +14,7 @@ import {
   Request,
   Param,
 } from "@nestjs/common";
+import { Request as ExpressRequest } from "express"; // ← ADD THIS IMPORT
 import {
   ApiTags,
   ApiOperation,
@@ -28,16 +29,20 @@ import { ProfileResponseDto } from "./dto/profile-response.dto";
 import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { Public } from "../../common/decorators/public.decorator";
 
+// Define the user type from the JWT payload
+interface RequestWithUser extends ExpressRequest {
+  user: {
+    id: string;
+    email: string;
+    role: string;
+  };
+}
+
 @ApiTags("Profile")
 @Controller("profile")
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
-  /**
-   * GET /api/v1/profile
-   * Get the current user's profile
-   * Requires authentication
-   */
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth("JWT-auth")
@@ -48,17 +53,13 @@ export class ProfileController {
     type: ProfileResponseDto,
   })
   @ApiResponse({ status: 404, description: "Profile not found" })
-  async getProfile(@Request() req): Promise<ProfileResponseDto> {
-    // req.user is populated by JwtAuthGuard
-    // It contains the user data from the JWT token
+  async getProfile(
+    @Request() req: RequestWithUser,
+  ): Promise<ProfileResponseDto> {
+    // req.user.id is now properly typed
     return this.profileService.getProfileByUserId(req.user.id);
   }
 
-  /**
-   * POST /api/v1/profile
-   * Create a new profile for the current user
-   * Requires authentication
-   */
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth("JWT-auth")
@@ -70,17 +71,12 @@ export class ProfileController {
   })
   @ApiResponse({ status: 403, description: "User already has a profile" })
   async createProfile(
-    @Request() req,
+    @Request() req: RequestWithUser, // ← Added type
     @Body() createProfileDto: CreateProfileDto,
   ): Promise<ProfileResponseDto> {
     return this.profileService.createProfile(req.user.id, createProfileDto);
   }
 
-  /**
-   * PUT /api/v1/profile
-   * Update the current user's profile
-   * Requires authentication
-   */
   @Put()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth("JWT-auth")
@@ -92,25 +88,16 @@ export class ProfileController {
   })
   @ApiResponse({ status: 404, description: "Profile not found" })
   async updateProfile(
-    @Request() req,
+    @Request() req: RequestWithUser, // ← Added type
     @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<ProfileResponseDto> {
     return this.profileService.updateProfile(req.user.id, updateProfileDto);
   }
 
-  /**
-   * GET /api/v1/profile/public/:userId
-   * Get a user's public profile (no authentication required)
-   * This is used for the public portfolio website
-   */
   @Get("public/:userId")
-  @Public() // This decorator bypasses JWT authentication
+  @Public()
   @ApiOperation({ summary: "Get public profile (no auth required)" })
-  @ApiParam({
-    name: "userId",
-    description: "ID of the user",
-    example: "cls5x3v8p0000v8q7a1b2c3d4",
-  })
+  @ApiParam({ name: "userId", description: "ID of the user" })
   @ApiResponse({
     status: 200,
     description: "Public profile found",
