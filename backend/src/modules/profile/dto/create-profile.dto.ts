@@ -1,23 +1,32 @@
 // ============================================
-// CREATE PROFILE DTO - Data Transfer Object
+// CREATE PROFILE DTO - Data Transfer Object (FIXED)
 // ============================================
-// This DTO validates the data sent to POST /api/v1/profile
-// All fields are optional because a user might create a profile gradually
+// 'name' is now required because Prisma expects it
+// All other fields remain optional
 
-import { ApiPropertyOptional } from "@nestjs/swagger";
-import { IsOptional, IsString, IsUrl, IsEmail } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import {
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsEmail,
+  IsNotEmpty,
+} from "class-validator";
 
 export class CreateProfileDto {
   // ===== REQUIRED FIELDS =====
-  // Actually all fields are optional - user can fill in gradually
+  // 'name' is required because it's NOT optional in the Prisma schema
 
-  @ApiPropertyOptional({
+  @ApiProperty({
     description: "Full name displayed on portfolio",
     example: "Dancan Kalerwa",
+    required: true,
   })
-  @IsOptional()
+  @IsNotEmpty({ message: "Name is required" })
   @IsString()
-  name?: string;
+  name?: string; // ← Changed from optional to required
+
+  // ===== OPTIONAL FIELDS =====
 
   @ApiPropertyOptional({
     description: "Professional title (e.g., Full Stack Developer)",
