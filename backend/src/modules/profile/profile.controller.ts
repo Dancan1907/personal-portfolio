@@ -14,7 +14,7 @@ import {
   Request,
   Param,
 } from "@nestjs/common";
-import { Request as ExpressRequest } from "express"; // ← ADD THIS IMPORT
+import { Request as ExpressRequest } from "express";
 import {
   ApiTags,
   ApiOperation,
@@ -30,9 +30,10 @@ import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
 import { Public } from "../../common/decorators/public.decorator";
 
 // Define the user type from the JWT payload
+// Matches what JwtStrategy.validate() actually returns: { userId, email, role }
 interface RequestWithUser extends ExpressRequest {
   user: {
-    id: string;
+    userId: string; // ← was `id`, corrected to match JwtStrategy
     email: string;
     role: string;
   };
@@ -56,8 +57,7 @@ export class ProfileController {
   async getProfile(
     @Request() req: RequestWithUser,
   ): Promise<ProfileResponseDto> {
-    // req.user.id is now properly typed
-    return this.profileService.getProfileByUserId(req.user.id);
+    return this.profileService.getProfileByUserId(req.user.userId);
   }
 
   @Post()
@@ -71,10 +71,10 @@ export class ProfileController {
   })
   @ApiResponse({ status: 403, description: "User already has a profile" })
   async createProfile(
-    @Request() req: RequestWithUser, // ← Added type
+    @Request() req: RequestWithUser,
     @Body() createProfileDto: CreateProfileDto,
   ): Promise<ProfileResponseDto> {
-    return this.profileService.createProfile(req.user.id, createProfileDto);
+    return this.profileService.createProfile(req.user.userId, createProfileDto);
   }
 
   @Put()
@@ -88,10 +88,10 @@ export class ProfileController {
   })
   @ApiResponse({ status: 404, description: "Profile not found" })
   async updateProfile(
-    @Request() req: RequestWithUser, // ← Added type
+    @Request() req: RequestWithUser,
     @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<ProfileResponseDto> {
-    return this.profileService.updateProfile(req.user.id, updateProfileDto);
+    return this.profileService.updateProfile(req.user.userId, updateProfileDto);
   }
 
   @Get("public/:userId")
