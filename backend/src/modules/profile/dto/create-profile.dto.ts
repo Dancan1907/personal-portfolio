@@ -24,7 +24,7 @@ export class CreateProfileDto {
   })
   @IsNotEmpty({ message: "Name is required" })
   @IsString()
-  name?: string; // ← Changed from optional to required
+  name!: string; // ← Changed from optional to required
 
   // ===== OPTIONAL FIELDS =====
 
