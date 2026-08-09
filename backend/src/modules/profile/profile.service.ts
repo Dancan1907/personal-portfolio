@@ -1,13 +1,13 @@
 // ============================================
 // PROFILE SERVICE - Business Logic (FIXED)
 // ============================================
-// Added helper method to convert null to undefined
-// Fixed type compatibility issues
+// Fixed: Ensure name is always a string, not undefined
 
 import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException, // ← ADD THIS IMPORT
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProfileDto } from "./dto/create-profile.dto";
@@ -21,14 +21,12 @@ export class ProfileService {
 
   /**
    * Helper: Convert Prisma Profile (with nulls) to ProfileResponseDto (with undefineds)
-   * This is needed because Prisma returns null for optional fields
-   * but our DTO expects undefined
    */
   private toProfileResponseDto(profile: Profile): ProfileResponseDto {
     return {
       id: profile.id,
       name: profile.name,
-      title: profile.title ?? undefined, // null → undefined
+      title: profile.title ?? undefined,
       bio: profile.bio ?? undefined,
       avatarUrl: profile.avatarUrl ?? undefined,
       resumeUrl: profile.resumeUrl ?? undefined,
@@ -69,11 +67,16 @@ export class ProfileService {
       throw new ForbiddenException("User already has a profile");
     }
 
-    // Create the profile - name is now required so it's always provided
+    // ✅ FIX: Ensure name is provided
+    if (!data.name) {
+      throw new BadRequestException("Name is required to create a profile");
+    }
+
+    // Create the profile - name is now guaranteed to be a string
     const profile = await this.prisma.profile.create({
       data: {
         userId,
-        name: data.name, // ← Now required
+        name: data.name, // ← Now TypeScript knows this is a string
         title: data.title,
         bio: data.bio,
         avatarUrl: data.avatarUrl,
