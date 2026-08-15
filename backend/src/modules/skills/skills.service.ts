@@ -1,13 +1,12 @@
 // ============================================
 // SKILLS SERVICE - Business Logic
 // ============================================
-// This service handles all database operations for skills
-// Includes public viewing and admin CRUD operations
 
 import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException, // ← ADD THIS IMPORT
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateSkillDto } from "./dto/create-skill.dto";
@@ -37,15 +36,10 @@ export class SkillsService {
 
   /**
    * Get all skills, ordered by category then by order
-   * @returns Array of all skills
    */
   async getAllSkills(): Promise<SkillResponseDto[]> {
     const skills = await this.prisma.skill.findMany({
-      orderBy: [
-        { category: "asc" }, // Group by category (A-Z)
-        { order: "asc" }, // Then by order (0, 1, 2, ...)
-        { name: "asc" }, // Then alphabetically
-      ],
+      orderBy: [{ category: "asc" }, { order: "asc" }, { name: "asc" }],
     });
 
     return skills.map((skill) => this.toSkillResponseDto(skill));
@@ -53,8 +47,6 @@ export class SkillsService {
 
   /**
    * Get skills by category
-   * @param category - The category to filter by
-   * @returns Array of skills in the category
    */
   async getSkillsByCategory(category: string): Promise<SkillResponseDto[]> {
     const skills = await this.prisma.skill.findMany({
@@ -67,7 +59,6 @@ export class SkillsService {
 
   /**
    * Get all unique categories
-   * @returns Array of category names
    */
   async getCategories(): Promise<string[]> {
     const result = await this.prisma.skill.findMany({
@@ -81,9 +72,6 @@ export class SkillsService {
 
   /**
    * Get a single skill by ID
-   * @param id - The skill ID
-   * @returns The skill data
-   * @throws NotFoundException if skill doesn't exist
    */
   async getSkillById(id: string): Promise<SkillResponseDto> {
     const skill = await this.prisma.skill.findUnique({
@@ -99,11 +87,18 @@ export class SkillsService {
 
   /**
    * Create a new skill
-   * @param data - Skill data to create
-   * @returns The created skill
-   * @throws ConflictException if skill already exists in category
+   * @throws BadRequestException if category or name is missing
+   * @throws ConflictException if skill already exists
    */
   async createSkill(data: CreateSkillDto): Promise<SkillResponseDto> {
+    // ✅ FIX: Ensure required fields are provided
+    if (!data.category) {
+      throw new BadRequestException("Category is required");
+    }
+    if (!data.name) {
+      throw new BadRequestException("Name is required");
+    }
+
     // Check if skill already exists in this category
     const existing = await this.prisma.skill.findUnique({
       where: {
@@ -122,8 +117,8 @@ export class SkillsService {
 
     const skill = await this.prisma.skill.create({
       data: {
-        category: data.category,
-        name: data.name,
+        category: data.category, // ← Now guaranteed to be a string
+        name: data.name, // ← Now guaranteed to be a string
         icon: data.icon,
         proficiency: data.proficiency,
         order: data.order ?? 0,
@@ -135,11 +130,6 @@ export class SkillsService {
 
   /**
    * Update an existing skill
-   * @param id - The skill ID
-   * @param data - Skill data to update
-   * @returns The updated skill
-   * @throws NotFoundException if skill doesn't exist
-   * @throws ConflictException if update would create a duplicate
    */
   async updateSkill(
     id: string,
@@ -154,9 +144,8 @@ export class SkillsService {
       throw new NotFoundException(`Skill with ID ${id} not found`);
     }
 
-    // If category AND name are being updated, check for duplicates
+    // ✅ FIX: If updating category AND name, check for duplicates
     if (data.category && data.name) {
-      // Check if another skill with the same category+name exists (excluding this one)
       const duplicate = await this.prisma.skill.findFirst({
         where: {
           category: data.category,
@@ -172,17 +161,18 @@ export class SkillsService {
       }
     }
 
+    // ✅ FIX: Build update data dynamically
+    const updateData: any = {};
+    if (data.category !== undefined) updateData.category = data.category;
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.icon !== undefined) updateData.icon = data.icon;
+    if (data.proficiency !== undefined)
+      updateData.proficiency = data.proficiency;
+    if (data.order !== undefined) updateData.order = data.order;
+
     const updatedSkill = await this.prisma.skill.update({
       where: { id },
-      data: {
-        ...(data.category !== undefined && { category: data.category }),
-        ...(data.name !== undefined && { name: data.name }),
-        ...(data.icon !== undefined && { icon: data.icon }),
-        ...(data.proficiency !== undefined && {
-          proficiency: data.proficiency,
-        }),
-        ...(data.order !== undefined && { order: data.order }),
-      },
+      data: updateData,
     });
 
     return this.toSkillResponseDto(updatedSkill);
@@ -190,11 +180,8 @@ export class SkillsService {
 
   /**
    * Delete a skill
-   * @param id - The skill ID
-   * @throws NotFoundException if skill doesn't exist
    */
   async deleteSkill(id: string): Promise<void> {
-    // Check if skill exists
     const existingSkill = await this.prisma.skill.findUnique({
       where: { id },
     });
