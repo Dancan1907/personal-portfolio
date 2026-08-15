@@ -25,7 +25,7 @@ export class CreateProjectDto {
   })
   @IsNotEmpty({ message: "Title is required" })
   @IsString()
-  title: string; // ← Required, so no initializer needed
+  title!: string; // ← Added '!' to tell TypeScript it will be assigned
 
   @ApiProperty({
     description:
@@ -40,7 +40,7 @@ export class CreateProjectDto {
   @Matches(/^[a-z0-9-]+$/, {
     message: "Slug can only contain lowercase letters, numbers, and hyphens",
   })
-  slug?: string; // ← Optional, so ? is correct
+  slug?: string;
 
   // ===== OPTIONAL FIELDS =====
 
