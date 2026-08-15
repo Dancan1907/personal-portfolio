@@ -12,7 +12,7 @@ import {
   IsUrl,
   IsBoolean,
   IsArray,
-  IsSlug,
+  Matches,
 } from "class-validator";
 
 export class CreateProjectDto {
@@ -25,7 +25,7 @@ export class CreateProjectDto {
   })
   @IsNotEmpty({ message: "Title is required" })
   @IsString()
-  title: string;
+  title: string; // ← Required, so no initializer needed
 
   @ApiProperty({
     description:
@@ -34,9 +34,13 @@ export class CreateProjectDto {
     required: false,
   })
   @IsOptional()
-  @IsSlug({ message: "Slug must be a valid URL slug" })
   @IsString()
-  slug?: string;
+  // Custom slug validation using regex pattern
+  // Only allows lowercase letters, numbers, and hyphens
+  @Matches(/^[a-z0-9-]+$/, {
+    message: "Slug can only contain lowercase letters, numbers, and hyphens",
+  })
+  slug?: string; // ← Optional, so ? is correct
 
   // ===== OPTIONAL FIELDS =====
 
