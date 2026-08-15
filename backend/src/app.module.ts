@@ -61,7 +61,7 @@ import { RequestIdMiddleware } from "./common/middleware/request-id.middleware";
     HealthModule,
     ProfileModule,
     SkillsModule,
-    ProfileModule,
+    ProjectsModule,
   ],
   providers: [
     {
