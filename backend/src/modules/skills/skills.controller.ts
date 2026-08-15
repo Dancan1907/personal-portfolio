@@ -14,7 +14,6 @@ import {
   Body,
   Param,
   UseGuards,
-  Query,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -22,7 +21,6 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
-  ApiQuery,
 } from "@nestjs/swagger";
 import { SkillsService } from "./skills.service";
 import { CreateSkillDto } from "./dto/create-skill.dto";
