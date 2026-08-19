@@ -5,7 +5,7 @@
 // Primarily used for marking messages as read or replied
 
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { IsBoolean, IsOptional, IsString, IsDateString } from "class-validator";
+import { IsBoolean, IsOptional, IsDateString } from "class-validator";
 
 export class UpdateContactDto {
   @ApiPropertyOptional({
