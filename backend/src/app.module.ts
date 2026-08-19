@@ -17,6 +17,7 @@ import { SkillsModule } from "./modules/skills/skills.module";
 import { ProjectsModule } from "./modules/projects/projects.module";
 import { ExperienceModule } from "./modules/experience/experience.module";
 import { EducationModule } from "./modules/education/education.module";
+import { ContactModule } from "./modules/contact/contact.module";
 import { RequestIdMiddleware } from "./common/middleware/request-id.middleware";
 
 @Module({
@@ -66,6 +67,7 @@ import { RequestIdMiddleware } from "./common/middleware/request-id.middleware";
     ProjectsModule,
     ExperienceModule,
     EducationModule,
+    ContactModule,
   ],
   providers: [
     {
