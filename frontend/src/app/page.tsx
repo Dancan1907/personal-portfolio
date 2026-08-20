@@ -21,7 +21,7 @@ export default async function HomePage() {
   let featuredProjects = [];
   try {
     const response = await fetch(`${API_URL}/projects/featured`, {
-      cache: "no-store",
+      next: { revalidate: 0 }, // ← REPLACE cache: 'no-store' with this
     });
     if (response.ok) {
       featuredProjects = await response.json();
@@ -38,7 +38,7 @@ export default async function HomePage() {
   let skills = [];
   try {
     const response = await fetch(`${API_URL}/skills`, {
-      cache: "no-store",
+      next: { revalidate: 0 }, // ← REPLACE cache: 'no-store' with this
     });
     if (response.ok) {
       skills = await response.json();
