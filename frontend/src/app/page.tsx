@@ -1,31 +1,62 @@
-// frontend/src/app/page.tsx
-"use client";
+// ============================================
+// HOME PAGE - Root Route
+// ============================================
+// This is the main landing page for the portfolio
+// It displays the home page content to ALL visitors
+// No authentication required - it's a public page
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/providers/auth-provider";
+import HeroSection from "@/components/home/hero-section";
+import FeaturedProjects from "@/components/home/featured-projects";
+import SkillsPreview from "@/components/home/skills-preview";
 
-export default function HomePage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+// Base URL for API calls
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
-  useEffect(() => {
-    if (!loading) {
-      if (user) {
-        router.push("/dashboard");
-      } else {
-        router.push("/login");
-      }
+// Server Component - fetches data on the server
+export default async function HomePage() {
+  // ============================================
+  // FETCH FEATURED PROJECTS
+  // ============================================
+  let featuredProjects = [];
+  try {
+    const response = await fetch(`${API_URL}/projects/featured`, {
+      cache: "no-store",
+    });
+    if (response.ok) {
+      featuredProjects = await response.json();
+    } else {
+      console.error("Failed to fetch featured projects:", response.status);
     }
-  }, [user, loading, router]);
+  } catch (error) {
+    console.error("Error fetching featured projects:", error);
+  }
 
-  // Show a loading spinner while checking auth status
+  // ============================================
+  // FETCH SKILLS
+  // ============================================
+  let skills = [];
+  try {
+    const response = await fetch(`${API_URL}/skills`, {
+      cache: "no-store",
+    });
+    if (response.ok) {
+      skills = await response.json();
+    } else {
+      console.error("Failed to fetch skills:", response.status);
+    }
+  } catch (error) {
+    console.error("Error fetching skills:", error);
+  }
+
+  // ============================================
+  // RENDER THE PAGE
+  // ============================================
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="text-center">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent"></div>
-        <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
-      </div>
+    <div className="min-h-screen">
+      <HeroSection />
+      <FeaturedProjects projects={featuredProjects} />
+      <SkillsPreview skills={skills} />
     </div>
   );
 }
