@@ -38,9 +38,8 @@ export default async function ProjectsPage() {
   let error = false;
 
   try {
-    const response = await fetch(`${API_URL}/projects`, {
-      cache: "no-store", // Always fetch fresh data
-    });
+    // ✅ REMOVED cache: "no-store" - using default fetch behavior
+    const response = await fetch(`${API_URL}/projects`);
 
     if (response.ok) {
       projects = await response.json();
