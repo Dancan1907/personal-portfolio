@@ -6,7 +6,6 @@ import { AuthProvider } from "@/providers/auth-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import ToastProvider from "@/components/toast-provider";
 import Navbar from "@/components/shared/navbar";
-// IMPORT THE FOOTER
 import Footer from "@/components/shared/footer";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -47,7 +46,6 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <Navbar />
-            {/* Main content - flex-grow pushes footer to bottom */}
             <main className="flex-grow">{children}</main>
             <Footer />
             <ToastProvider />
