@@ -3,7 +3,7 @@
 // FOOTER COMPONENT - Page Footer
 // ============================================
 
-"use client"; // ← ADD THIS - Required for client-side interactivity
+"use client"; // ← THIS IS CRITICAL - Must be the first line!
 
 import Link from "next/link";
 import { Github, Linkedin, Mail, MapPin } from "lucide-react";
