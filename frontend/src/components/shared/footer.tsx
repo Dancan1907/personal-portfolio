@@ -1,18 +1,14 @@
+// frontend/src/components/shared/footer.tsx
 // ============================================
 // FOOTER COMPONENT - Page Footer
 // ============================================
-// This component provides the footer for the portfolio
-// Features:
-// - Copyright with current year
-// - Social media links
-// - Quick navigation links
-// - Glass-morphism styling matching navbar
+
+"use client"; // ← ADD THIS - Required for client-side interactivity
 
 import Link from "next/link";
-import { Github, Linkedin, Twitter, Mail, MapPin } from "lucide-react";
+import { Github, Linkedin, Mail, MapPin } from "lucide-react";
 
 // Social media links configuration
-// Add your actual profile URLs here
 const socialLinks = [
   {
     name: "GitHub",
@@ -26,12 +22,6 @@ const socialLinks = [
     icon: Linkedin,
     color: "hover:text-blue-600 dark:hover:text-blue-400",
   },
-  /*{
-    name: "Twitter/X",
-    href: "https://x.com/Dancankalerwa",
-    icon: Twitter,
-    color: "hover:text-sky-500 dark:hover:text-sky-400",
-  }, */
   {
     name: "Email",
     href: "mailto:dancankalerwa@gmail.com",
@@ -49,14 +39,13 @@ const quickLinks = [
 ];
 
 export default function Footer() {
-  // Get current year for copyright
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-t border-gray-200/50 dark:border-gray-700/50 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* ===== COLUMN 1: Brand ===== */}
+          {/* Column 1: Brand */}
           <div className="col-span-1 md:col-span-2">
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">
               <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
@@ -78,7 +67,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* ===== COLUMN 2: Quick Links ===== */}
+          {/* Column 2: Quick Links */}
           <div>
             <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
               Quick Links
@@ -97,7 +86,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* ===== COLUMN 3: Social ===== */}
+          {/* Column 3: Social */}
           <div>
             <h4 className="text-sm font-semibold text-gray-900 dark:text-white uppercase tracking-wider">
               Connect
@@ -127,7 +116,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* ===== Copyright ===== */}
+        {/* Copyright */}
         <div className="mt-8 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
             &copy; {currentYear} Dancan Kalerwa. All rights reserved.
