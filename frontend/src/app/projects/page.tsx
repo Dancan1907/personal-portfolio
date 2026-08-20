@@ -42,7 +42,9 @@ export default async function ProjectsPage() {
     const response = await fetch(`${API_URL}/projects`);
 
     if (response.ok) {
-      projects = await response.json();
+      const data = await response.json();
+      console.log("📊 Projects fetched:", data.length);
+      projects = data;
     } else {
       console.error("Failed to fetch projects:", response.status);
       error = true;
