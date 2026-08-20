@@ -5,23 +5,27 @@ import "./globals.css";
 import { AuthProvider } from "@/providers/auth-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import ToastProvider from "@/components/toast-provider";
+// IMPORT THE NAVBAR
+import Navbar from "@/components/shared/navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    default: "Full Stack Template",
-    template: "%s | Full Stack Template",
+    default: "Dancan Kalerwa | Portfolio",
+    template: "%s | Dancan Kalerwa",
   },
-  description: "Production-ready full-stack template with NestJS and Next.js",
+  description:
+    "Full-stack developer portfolio showcasing projects, skills, and experience.",
   openGraph: {
-    title: "Full Stack Template",
-    description: "Production-ready full-stack template with NestJS and Next.js",
-    url: "https://your-app.com",
-    siteName: "Full Stack Template",
+    title: "Dancan Kalerwa | Portfolio",
+    description:
+      "Full-stack developer portfolio showcasing projects, skills, and experience.",
+    url: "https://your-portfolio.com",
+    siteName: "Dancan Kalerwa",
     images: [
       {
-        url: "https://your-app.com/og-image.png",
+        url: "https://your-portfolio.com/og-image.png",
         width: 1200,
         height: 630,
       },
@@ -41,6 +45,8 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <AuthProvider>
+            {/* ADD THE NAVBAR HERE */}
+            <Navbar />
             {children}
             <ToastProvider />
           </AuthProvider>
