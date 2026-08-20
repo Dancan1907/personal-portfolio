@@ -5,8 +5,9 @@ import "./globals.css";
 import { AuthProvider } from "@/providers/auth-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
 import ToastProvider from "@/components/toast-provider";
-// IMPORT THE NAVBAR
 import Navbar from "@/components/shared/navbar";
+// IMPORT THE FOOTER
+import Footer from "@/components/shared/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -42,12 +43,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.className} flex flex-col min-h-screen`}>
         <ThemeProvider>
           <AuthProvider>
-            {/* ADD THE NAVBAR HERE */}
             <Navbar />
-            {children}
+            {/* Main content - flex-grow pushes footer to bottom */}
+            <main className="flex-grow">{children}</main>
+            <Footer />
             <ToastProvider />
           </AuthProvider>
         </ThemeProvider>
