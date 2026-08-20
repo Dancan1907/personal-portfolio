@@ -21,8 +21,19 @@ import {
   Globe,
   Github,
   Linkedin,
-  Twitter,
 } from "lucide-react";
+
+// ============================================
+// INLINE SVG ICON - Twitter/X
+// ============================================
+
+function TwitterIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
 
 // ============================================
 // TYPES
@@ -104,7 +115,6 @@ export default function ProfileManagement() {
       }
     } catch (err) {
       console.error("Error fetching profile:", err);
-      // If profile doesn't exist, that's okay - user can create one
       if (err.response?.status === 404) {
         setError("No profile found. Fill in the form below to create one.");
       } else {
@@ -146,16 +156,13 @@ export default function ProfileManagement() {
 
     try {
       if (profile) {
-        // Update existing profile
         await api.put("/profile", payload);
         setSuccess("Profile updated successfully!");
       } else {
-        // Create new profile
         await api.post("/profile", payload);
         setSuccess("Profile created successfully!");
       }
 
-      // Re-fetch to get updated data
       await fetchProfile();
     } catch (err) {
       console.error("Error saving profile:", err);
@@ -211,10 +218,9 @@ export default function ProfileManagement() {
           </p>
         </div>
       ) : (
-        /* Profile Form */
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Profile Image Preview (Optional) */}
+            {/* Profile Image Preview */}
             {formData.avatarUrl && (
               <div className="flex items-center gap-4">
                 <img
@@ -383,7 +389,7 @@ export default function ProfileManagement() {
                     Twitter/X URL
                   </label>
                   <div className="relative">
-                    <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <TwitterIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <input
                       type="url"
                       value={formData.twitterUrl}
