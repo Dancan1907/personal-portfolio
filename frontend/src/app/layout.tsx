@@ -7,6 +7,8 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import ToastProvider from "@/components/toast-provider";
 import Navbar from "@/components/shared/navbar";
 import Footer from "@/components/shared/footer";
+// ADD THIS IMPORT
+import PageTransition from "@/components/shared/page-transition";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,7 +48,10 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <Navbar />
-            <main className="flex-grow">{children}</main>
+            {/* WRAP CHILDREN WITH PAGE TRANSITION */}
+            <PageTransition>
+              <main className="flex-grow">{children}</main>
+            </PageTransition>
             <Footer />
             <ToastProvider />
           </AuthProvider>
