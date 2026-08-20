@@ -3,7 +3,7 @@
 // NAVBAR COMPONENT - Main Navigation
 // ============================================
 
-"use client";
+"use client"; // ← THIS IS CRITICAL - Must be the first line!
 
 import { useState } from "react";
 import Link from "next/link";
@@ -23,6 +23,7 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 
+// Define the navigation links array
 const navigationLinks = [
   { name: "Home", href: "/", icon: Home },
   { name: "About", href: "/about", icon: User },
