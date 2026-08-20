@@ -7,9 +7,11 @@
 // - Grid of project cards (3-4 projects)
 // - Project title, description, tech stack badges
 // - Link to view all projects
+// - Scroll-reveal animation on entry
 
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import ScrollReveal from "@/components/shared/scroll-reveal";
 
 // Inline icon — lucide-react removed the Github brand icon in recent versions
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -52,35 +54,37 @@ export default function FeaturedProjects({ projects }: FeaturedProjectsProps) {
 
   return (
     <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50/50 dark:bg-gray-900/30">
-      <div className="max-w-7xl mx-auto">
-        {/* Section Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
-            Featured Projects
-          </h2>
-          <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Here are some of my recent projects that I&apos;m proud of.
-          </p>
-        </div>
+      <ScrollReveal>
+        <div className="max-w-7xl mx-auto">
+          {/* Section Header */}
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-3">
+              Featured Projects
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Here are some of my recent projects that I&apos;m proud of.
+            </p>
+          </div>
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-          {featuredProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
+          {/* Projects Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+            {featuredProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
 
-        {/* View All Projects Link */}
-        <div className="text-center mt-8 sm:mt-12">
-          <Link
-            href="/projects"
-            className="inline-flex items-center gap-2 px-6 py-3 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors"
-          >
-            View All Projects
-            <span className="text-lg">→</span>
-          </Link>
+          {/* View All Projects Link */}
+          <div className="text-center mt-8 sm:mt-12">
+            <Link
+              href="/projects"
+              className="inline-flex items-center gap-2 px-6 py-3 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium transition-colors"
+            >
+              View All Projects
+              <span className="text-lg">→</span>
+            </Link>
+          </div>
         </div>
-      </div>
+      </ScrollReveal>
     </section>
   );
 }
