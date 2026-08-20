@@ -1,9 +1,7 @@
 // ============================================
 // CONTACT SERVICE - Business Logic (UPDATED)
 // ============================================
-// This service handles all database operations for contact messages
-// Includes public submission and admin management
-// Added email notification when a new message is submitted
+// Using Resend API for email delivery
 
 import {
   Injectable,
@@ -11,24 +9,21 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { EmailService } from "../email/email.service"; // ← ADDED
 import { CreateContactDto } from "./dto/create-contact.dto";
 import { UpdateContactDto } from "./dto/update-contact.dto";
 import { ContactResponseDto } from "./dto/contact-response.dto";
 import { ContactMessage } from "@prisma/client";
+import { Resend } from "resend"; // ← ADD THIS
 
 @Injectable()
 export class ContactService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly emailService: EmailService, // ← ADDED
-  ) {}
+  private resend: Resend; // ← ADD THIS
 
-  /**
-   * Helper: Convert Prisma ContactMessage to ContactResponseDto
-   * This ensures consistent response format across all endpoints
-   * Converts null values to undefined for cleaner JSON output
-   */
+  constructor(private readonly prisma: PrismaService) {
+    // Initialize Resend with API key from environment
+    this.resend = new Resend(process.env.RESEND_API_KEY);
+  }
+
   private toContactResponseDto(message: ContactMessage): ContactResponseDto {
     return {
       id: message.id,
@@ -45,13 +40,31 @@ export class ContactService {
     };
   }
 
-  /**
-   * Submit a new contact message (public)
-   * @param data - Contact message data
-   * @param ipAddress - Optional IP address of the sender
-   * @param userAgent - Optional user agent of the sender
-   * @returns The created message
-   */
+  async getAllMessages(): Promise<ContactResponseDto[]> {
+    const messages = await this.prisma.contactMessage.findMany({
+      orderBy: [{ isRead: "asc" }, { createdAt: "desc" }],
+    });
+    return messages.map((msg) => this.toContactResponseDto(msg));
+  }
+
+  async getUnreadCount(): Promise<number> {
+    return this.prisma.contactMessage.count({
+      where: { isRead: false },
+    });
+  }
+
+  async getMessageById(id: string): Promise<ContactResponseDto> {
+    const message = await this.prisma.contactMessage.findUnique({
+      where: { id },
+    });
+
+    if (!message) {
+      throw new NotFoundException(`Message with ID ${id} not found`);
+    }
+
+    return this.toContactResponseDto(message);
+  }
+
   async submitMessage(
     data: CreateContactDto,
     ipAddress?: string,
@@ -77,96 +90,55 @@ export class ContactService {
         message: data.message,
         ipAddress: ipAddress,
         userAgent: userAgent,
-        isRead: false, // Default: unread
-        replied: false, // Default: not replied
+        isRead: false,
+        replied: false,
       },
     });
 
     // ============================================
-    // SEND EMAIL NOTIFICATION
+    // SEND EMAIL VIA RESEND
     // ============================================
     try {
-      await this.emailService.sendEmail({
-        to: process.env.EMAIL_FROM || "admin@example.com", // Your email
+      const { data: emailData, error } = await this.resend.emails.send({
+        from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
+        to: ["dancankalerwa@gmail.com"], // ← YOUR EMAIL
         subject: `📩 New Contact Message from ${data.name}`,
         html: `
           <h2>New Contact Message</h2>
           <p><strong>From:</strong> ${data.name} (${data.email})</p>
           ${data.subject ? `<p><strong>Subject:</strong> ${data.subject}</p>` : ""}
           <p><strong>Message:</strong></p>
-          <p style="background: #f5f5f5; padding: 15px; border-radius: 5px;">${data.message}</p>
+          <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin: 10px 0;">
+            ${data.message}
+          </div>
           <hr>
           <p style="color: #888; font-size: 12px;">
             Sent from your portfolio contact form.<br>
             IP: ${ipAddress || "N/A"} | User Agent: ${userAgent || "N/A"}
           </p>
+          <p style="color: #888; font-size: 12px;">
+            <a href="${process.env.FRONTEND_URL}/dashboard/messages">View in Dashboard</a>
+          </p>
         `,
       });
-      console.log(`📧 Email notification sent for message from ${data.email}`);
+
+      if (error) {
+        console.error("❌ Resend error:", error);
+      } else {
+        console.log(`📧 Email sent via Resend! ID: ${emailData?.id}`);
+      }
     } catch (error) {
       // Don't fail the request if email fails - just log it
-      console.error("❌ Failed to send email notification:", error);
+      console.error("❌ Failed to send email:", error);
     }
 
     return this.toContactResponseDto(message);
   }
 
-  /**
-   * Get all contact messages (admin only)
-   * @returns Array of all messages, sorted by newest first
-   */
-  async getAllMessages(): Promise<ContactResponseDto[]> {
-    const messages = await this.prisma.contactMessage.findMany({
-      orderBy: [
-        { isRead: "asc" }, // Unread messages first
-        { createdAt: "desc" }, // Then newest first
-      ],
-    });
-
-    return messages.map((msg) => this.toContactResponseDto(msg));
-  }
-
-  /**
-   * Get unread messages count (admin only)
-   * @returns Number of unread messages
-   */
-  async getUnreadCount(): Promise<number> {
-    return this.prisma.contactMessage.count({
-      where: { isRead: false },
-    });
-  }
-
-  /**
-   * Get a single contact message by ID (admin only)
-   * @param id - The message ID
-   * @returns The message data
-   * @throws NotFoundException if message doesn't exist
-   */
-  async getMessageById(id: string): Promise<ContactResponseDto> {
-    const message = await this.prisma.contactMessage.findUnique({
-      where: { id },
-    });
-
-    if (!message) {
-      throw new NotFoundException(`Message with ID ${id} not found`);
-    }
-
-    return this.toContactResponseDto(message);
-  }
-
-  /**
-   * Update a contact message (admin only)
-   * Primarily used to mark messages as read or replied
-   * @param id - The message ID
-   * @param data - Update data
-   * @returns The updated message
-   * @throws NotFoundException if message doesn't exist
-   */
   async updateMessage(
     id: string,
     data: UpdateContactDto,
   ): Promise<ContactResponseDto> {
-    // Check if message exists
     const existingMessage = await this.prisma.contactMessage.findUnique({
       where: { id },
     });
@@ -175,7 +147,6 @@ export class ContactService {
       throw new NotFoundException(`Message with ID ${id} not found`);
     }
 
-    // Build update data
     const updateData: any = {};
     if (data.isRead !== undefined) updateData.isRead = data.isRead;
     if (data.replied !== undefined) updateData.replied = data.replied;
@@ -183,7 +154,6 @@ export class ContactService {
       updateData.repliedAt = data.repliedAt ? new Date(data.repliedAt) : null;
     }
 
-    // If replied is set to true and repliedAt is not provided, set it to now
     if (data.replied === true && !data.repliedAt) {
       updateData.repliedAt = new Date();
     }
@@ -196,13 +166,7 @@ export class ContactService {
     return this.toContactResponseDto(updatedMessage);
   }
 
-  /**
-   * Delete a contact message (admin only)
-   * @param id - The message ID
-   * @throws NotFoundException if message doesn't exist
-   */
   async deleteMessage(id: string): Promise<void> {
-    // Check if message exists
     const existingMessage = await this.prisma.contactMessage.findUnique({
       where: { id },
     });
@@ -211,7 +175,6 @@ export class ContactService {
       throw new NotFoundException(`Message with ID ${id} not found`);
     }
 
-    // Delete the message
     await this.prisma.contactMessage.delete({
       where: { id },
     });
