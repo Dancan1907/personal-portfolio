@@ -35,18 +35,21 @@ type Skill = {
 };
 
 // ============================================
-// ICON MAPPING
+// ICON MAPPING - FIXED
 // ============================================
 
 // Map skill icon names to Lucide icon components
 // These names should match what's stored in your database
+// NOTE: Some icons don't exist in lucide-react (React, Nextjs, Vue, Angular, Svelte, Github)
+// We use Circle as a fallback for missing icons
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   // ===== FRONTEND =====
-  React: Icons.React,
-  Nextjs: Icons.Nextjs,
-  Vue: Icons.Vue,
-  Angular: Icons.Angular,
-  Svelte: Icons.Svelte,
+  // These icons don't exist in lucide-react, use Circle as fallback
+  React: Icons.Circle, // ← React icon doesn't exist
+  Nextjs: Icons.Circle, // ← Nextjs doesn't exist
+  Vue: Icons.Circle, // ← Vue doesn't exist
+  Angular: Icons.Circle, // ← Angular doesn't exist
+  Svelte: Icons.Circle, // ← Svelte doesn't exist
   Tailwind: Icons.Palette,
   "Tailwind CSS": Icons.Palette,
   CSS: Icons.Palette,
@@ -81,7 +84,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   AWS: Icons.Cloud,
   Azure: Icons.Cloud,
   GCP: Icons.Cloud,
-  Github: Icons.Github,
+  Github: Icons.Circle, // ← Github doesn't exist
   Git: Icons.GitBranch,
   "CI/CD": Icons.Workflow,
   Jenkins: Icons.Workflow,
