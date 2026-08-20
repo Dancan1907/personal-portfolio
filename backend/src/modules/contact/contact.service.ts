@@ -1,8 +1,9 @@
 // ============================================
-// CONTACT SERVICE - Business Logic
+// CONTACT SERVICE - Business Logic (UPDATED)
 // ============================================
 // This service handles all database operations for contact messages
 // Includes public submission and admin management
+// Added email notification when a new message is submitted
 
 import {
   Injectable,
@@ -10,6 +11,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { EmailService } from "../email/email.service"; // ← ADDED
 import { CreateContactDto } from "./dto/create-contact.dto";
 import { UpdateContactDto } from "./dto/update-contact.dto";
 import { ContactResponseDto } from "./dto/contact-response.dto";
@@ -17,7 +19,10 @@ import { ContactMessage } from "@prisma/client";
 
 @Injectable()
 export class ContactService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService, // ← ADDED
+  ) {}
 
   /**
    * Helper: Convert Prisma ContactMessage to ContactResponseDto
@@ -77,8 +82,31 @@ export class ContactService {
       },
     });
 
-    // TODO: Send email notification to admin (optional)
-    // This will be implemented later
+    // ============================================
+    // SEND EMAIL NOTIFICATION
+    // ============================================
+    try {
+      await this.emailService.sendEmail({
+        to: process.env.EMAIL_FROM || "admin@example.com", // Your email
+        subject: `📩 New Contact Message from ${data.name}`,
+        html: `
+          <h2>New Contact Message</h2>
+          <p><strong>From:</strong> ${data.name} (${data.email})</p>
+          ${data.subject ? `<p><strong>Subject:</strong> ${data.subject}</p>` : ""}
+          <p><strong>Message:</strong></p>
+          <p style="background: #f5f5f5; padding: 15px; border-radius: 5px;">${data.message}</p>
+          <hr>
+          <p style="color: #888; font-size: 12px;">
+            Sent from your portfolio contact form.<br>
+            IP: ${ipAddress || "N/A"} | User Agent: ${userAgent || "N/A"}
+          </p>
+        `,
+      });
+      console.log(`📧 Email notification sent for message from ${data.email}`);
+    } catch (error) {
+      // Don't fail the request if email fails - just log it
+      console.error("❌ Failed to send email notification:", error);
+    }
 
     return this.toContactResponseDto(message);
   }
