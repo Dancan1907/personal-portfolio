@@ -13,14 +13,13 @@ import { CreateContactDto } from "./dto/create-contact.dto";
 import { UpdateContactDto } from "./dto/update-contact.dto";
 import { ContactResponseDto } from "./dto/contact-response.dto";
 import { ContactMessage } from "@prisma/client";
-import { Resend } from "resend"; // ← ADD THIS
+import { Resend } from "resend";
 
 @Injectable()
 export class ContactService {
-  private resend: Resend; // ← ADD THIS
+  private resend: Resend;
 
   constructor(private readonly prisma: PrismaService) {
-    // Initialize Resend with API key from environment
     this.resend = new Resend(process.env.RESEND_API_KEY);
   }
 
@@ -99,9 +98,12 @@ export class ContactService {
     // SEND EMAIL VIA RESEND
     // ============================================
     try {
+      const recipient =
+        process.env.EMAIL_RECIPIENT || "dancankalerwa@gmail.com";
+
       const { data: emailData, error } = await this.resend.emails.send({
         from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
-        to: ["dancankalerwa@gmail.com"], // ← YOUR EMAIL
+        to: [recipient],
         subject: `📩 New Contact Message from ${data.name}`,
         html: `
           <h2>New Contact Message</h2>
@@ -126,9 +128,9 @@ export class ContactService {
         console.error("❌ Resend error:", error);
       } else {
         console.log(`📧 Email sent via Resend! ID: ${emailData?.id}`);
+        console.log(`📧 Recipient: ${recipient}`);
       }
     } catch (error) {
-      // Don't fail the request if email fails - just log it
       console.error("❌ Failed to send email:", error);
     }
 
