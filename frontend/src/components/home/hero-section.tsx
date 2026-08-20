@@ -10,7 +10,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Mail } from "lucide-react";
-import TypewriterEffect from "@/components/home/typewriter-effect";
+import TypewriterEffect from "@/components/shared/typewriter-effect";
 
 export default function HeroSection() {
   return (
