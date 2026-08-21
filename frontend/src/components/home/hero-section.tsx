@@ -4,12 +4,13 @@
 // This component displays the main hero section on the home page
 // It's a Server Component (no "use client" needed)
 // Features:
-// - Name and title
+// - Name and title (animated with typewriter effect)
 // - Brief tagline
 // - CTA buttons (View Projects, Contact)
 
 import Link from "next/link";
 import { ArrowRight, Mail } from "lucide-react";
+import TypewriterEffect from "@/components/shared/typewriter-effect";
 
 export default function HeroSection() {
   return (
@@ -29,9 +30,11 @@ export default function HeroSection() {
 
         {/* Name */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
-          <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-transparent bg-clip-text">
-            Dancan Kalerwa
-          </span>
+          <TypewriterEffect
+            text="Dancan Kalerwa"
+            className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-transparent bg-clip-text"
+            delay={0.3}
+          />
         </h1>
 
         {/* Title */}

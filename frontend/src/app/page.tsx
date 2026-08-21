@@ -1,9 +1,12 @@
+// frontend/src/app/page.tsx
 // ============================================
-// HOME PAGE - Root Route
+// HOME PAGE - Server Component
 // ============================================
 // This is the main landing page for the portfolio
-// It displays the home page content to ALL visitors
-// No authentication required - it's a public page
+// Features:
+// - Hero section with typewriter effect
+// - Featured projects with scroll animations
+// - Skills preview with scroll animations
 
 import HeroSection from "@/components/home/hero-section";
 import FeaturedProjects from "@/components/home/featured-projects";
@@ -13,7 +16,6 @@ import SkillsPreview from "@/components/home/skills-preview";
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
-// Server Component - fetches data on the server
 export default async function HomePage() {
   // ============================================
   // FETCH FEATURED PROJECTS
@@ -21,7 +23,7 @@ export default async function HomePage() {
   let featuredProjects = [];
   try {
     const response = await fetch(`${API_URL}/projects/featured`, {
-      next: { revalidate: 0 }, // ← REPLACE cache: 'no-store' with this
+      cache: "no-store",
     });
     if (response.ok) {
       featuredProjects = await response.json();
@@ -38,7 +40,7 @@ export default async function HomePage() {
   let skills = [];
   try {
     const response = await fetch(`${API_URL}/skills`, {
-      next: { revalidate: 0 }, // ← REPLACE cache: 'no-store' with this
+      cache: "no-store",
     });
     if (response.ok) {
       skills = await response.json();
@@ -49,9 +51,6 @@ export default async function HomePage() {
     console.error("Error fetching skills:", error);
   }
 
-  // ============================================
-  // RENDER THE PAGE
-  // ============================================
   return (
     <div className="min-h-screen">
       <HeroSection />
