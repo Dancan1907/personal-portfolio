@@ -41,7 +41,7 @@ export default function SkillsManagement() {
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  // ❌ REMOVE: const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -93,14 +93,11 @@ export default function SkillsManagement() {
 
     try {
       if (editingSkill) {
-        // Update existing skill
         await api.put(`/skills/${editingSkill.id}`, payload);
       } else {
-        // Create new skill
         await api.post("/skills", payload);
       }
 
-      // Refresh the list and close modal
       await fetchSkills();
       closeModal();
     } catch (err) {
@@ -208,7 +205,6 @@ export default function SkillsManagement() {
           </p>
         </div>
       ) : skills.length === 0 ? (
-        /* Empty State */
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
           <p className="text-gray-500 dark:text-gray-400">No skills found.</p>
           <button
@@ -220,7 +216,6 @@ export default function SkillsManagement() {
           </button>
         </div>
       ) : (
-        /* Skills Table */
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
