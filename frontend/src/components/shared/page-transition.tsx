@@ -29,9 +29,9 @@ const pageVariants = {
   },
 };
 
-// ✅ FIX: Remove 'type' property to fix TypeScript error
+// ✅ FIX: Use 'as const' to fix TypeScript error
 const pageTransition = {
-  ease: "easeInOut",
+  ease: "easeInOut" as const,
   duration: 0.3,
 };
 
