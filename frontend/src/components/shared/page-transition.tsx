@@ -29,9 +29,8 @@ const pageVariants = {
   },
 };
 
-// Transition settings
+// ✅ FIX: Remove 'type' property to fix TypeScript error
 const pageTransition = {
-  type: "tween",
   ease: "easeInOut",
   duration: 0.3,
 };
