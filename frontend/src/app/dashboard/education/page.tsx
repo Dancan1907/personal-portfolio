@@ -13,15 +13,7 @@
 
 import { useState, useEffect } from "react";
 import api from "@/lib/axios";
-import {
-  Plus,
-  Edit2,
-  Trash2,
-  X,
-  GraduationCap,
-  Calendar,
-  MapPin,
-} from "lucide-react";
+import { Plus, Edit2, Trash2, X, Calendar, MapPin } from "lucide-react";
 
 // ============================================
 // TYPES
