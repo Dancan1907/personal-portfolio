@@ -19,10 +19,8 @@ export default function TypewriterEffect({
   className = "",
   delay = 0,
 }: TypewriterEffectProps) {
-  // Split text into characters
   const characters = text.split("");
 
-  // Animation variants for each character
   const container = {
     hidden: { opacity: 0 },
     visible: () => ({
@@ -33,6 +31,8 @@ export default function TypewriterEffect({
       },
     }),
   };
+
+  // ✅ FIX: Use 'as const' for TypeScript literal types
   const child = {
     hidden: {
       opacity: 0,
@@ -42,7 +42,7 @@ export default function TypewriterEffect({
       opacity: 1,
       y: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         damping: 12,
         stiffness: 100,
       },
