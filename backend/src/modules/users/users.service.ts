@@ -4,7 +4,8 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
-import * as argon2 from "argon2";
+// ✅ REPLACE argon2 with bcrypt
+import * as bcrypt from "bcrypt";
 import { PrismaService } from "../prisma/prisma.service";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { ChangeRoleDto } from "./dto/change-role.dto";
@@ -31,7 +32,6 @@ export class UsersService {
         updatedAt: true,
       },
     });
-    // The Prisma result matches UserResponseDto shape exactly
     return users as UserResponseDto[];
   }
 
@@ -65,13 +65,11 @@ export class UsersService {
    * Returns updated UserResponseDto
    */
   async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
-    // Check if user exists (will throw if not found)
     await this.findOne(id);
 
     const updated = await this.prisma.user.update({
       where: { id },
       data: {
-        // Only include fields that are provided
         ...(dto.name !== undefined && { name: dto.name }),
         ...(dto.isActive !== undefined && { isActive: dto.isActive }),
         ...(dto.role !== undefined && { role: dto.role }),
@@ -110,10 +108,16 @@ export class UsersService {
   ) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException("User not found");
-    const isValid = await argon2.verify(user.password, currentPassword);
-    if (!isValid)
+
+    // ✅ REPLACE argon2.verify() with bcrypt.compare()
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) {
       throw new UnauthorizedException("Current password is incorrect");
-    const hashed = await argon2.hash(newPassword);
+    }
+
+    // ✅ REPLACE argon2.hash() with bcrypt.hash()
+    const hashed = await bcrypt.hash(newPassword, 10);
+
     await this.prisma.user.update({
       where: { id: userId },
       data: { password: hashed },
@@ -125,9 +129,7 @@ export class UsersService {
    * Delete a user (hard delete)
    */
   async remove(id: string): Promise<void> {
-    // Check if user exists (will throw if not found)
     await this.findOne(id);
-    // Delete the user
     await this.prisma.user.delete({
       where: { id },
     });
