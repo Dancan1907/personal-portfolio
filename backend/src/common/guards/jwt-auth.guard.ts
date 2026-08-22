@@ -1,40 +1,81 @@
+// backend/src/common/guards/jwt-auth.guard.ts
 import {
   Injectable,
   ExecutionContext,
   UnauthorizedException,
+  CanActivate,
 } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
+import { JwtService } from "@nestjs/jwt";
 import { Reflector } from "@nestjs/core";
-// We'll create a @Public() decorator to bypass auth on some routes
+import { PrismaService } from "../../modules/prisma/prisma.service";
 import { IS_PUBLIC_KEY } from "../decorators/public.decorator";
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard("jwt") {
-  // Reflector allows us to read metadata set by decorators
-  constructor(private reflector: Reflector) {
-    super();
-  }
+export class JwtAuthGuard implements CanActivate {
+  constructor(
+    private jwtService: JwtService,
+    private prisma: PrismaService,
+    private reflector: Reflector,
+  ) {}
 
-  canActivate(context: ExecutionContext) {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     // Check if the route is marked as public using @Public()
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
     if (isPublic) {
-      // If public, allow access without JWT
       return true;
     }
-    // Otherwise, delegate to the default JWT guard logic
-    return super.canActivate(context);
+
+    const request = context.switchToHttp().getRequest();
+    const token = this.extractTokenFromHeader(request);
+
+    if (!token) {
+      throw new UnauthorizedException("No token provided");
+    }
+
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
+
+      // Verify user exists and is active
+      const user = await this.prisma.user.findUnique({
+        where: { id: payload.sub },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          isActive: true,
+        },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException("User not found");
+      }
+
+      if (!user.isActive) {
+        throw new UnauthorizedException("Account is disabled");
+      }
+
+      // Attach user to request
+      request.user = {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      };
+
+      return true;
+    } catch (error) {
+      throw new UnauthorizedException("Invalid or expired token");
+    }
   }
 
-  // handleRequest is called after the strategy validates the token
-  handleRequest(err: any, user: any, _info: any) {
-    // If there's an error or no user, throw Unauthorized
-    if (err || !user) {
-      throw err || new UnauthorizedException("Invalid or expired token");
-    }
-    return user;
+  private extractTokenFromHeader(request: any): string | undefined {
+    const [type, token] = request.headers.authorization?.split(" ") ?? [];
+    return type === "Bearer" ? token : undefined;
   }
 }
