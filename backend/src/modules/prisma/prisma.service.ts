@@ -1,34 +1,98 @@
+// ============================================
+// PRISMA SERVICE - Database Access Layer
+// ============================================
+// This service provides database access via Prisma.
+// Uses composition instead of inheritance to avoid
+// "Class constructor cannot be invoked without 'new'" error.
+
 import { Injectable, OnModuleInit, OnModuleDestroy } from "@nestjs/common";
 import { PrismaClient } from "@prisma/client";
 
 @Injectable()
-export class PrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class PrismaService implements OnModuleInit, OnModuleDestroy {
+  // ✅ Use composition: store PrismaClient as a property
+  private prisma: PrismaClient;
+
   constructor() {
-    super({
+    // ✅ Initialize PrismaClient in the constructor
+    this.prisma = new PrismaClient({
       log:
         process.env.NODE_ENV === "development"
           ? ["query", "info", "warn", "error"]
           : ["error"],
     });
-  }
 
-  async onModuleInit() {
-    await this.$connect();
-
-    // After connecting, add middleware:
-    this.$use(async (params, next) => {
+    // ✅ Add middleware after initialization
+    this.prisma.$use(async (params, next) => {
       if (params.model === "User" && params.action === "findMany") {
         params.args.where = { ...params.args.where, deletedAt: null };
       }
-      // handle other actions...
       return next(params);
     });
   }
 
+  async onModuleInit() {
+    await this.prisma.$connect();
+  }
+
   async onModuleDestroy() {
-    await this.$disconnect();
+    await this.prisma.$disconnect();
+  }
+
+  // ============================================
+  // DELEGATE ALL PRISMA METHODS
+  // ============================================
+  // This allows the service to be used just like a PrismaClient instance
+
+  get user() {
+    return this.prisma.user;
+  }
+
+  get profile() {
+    return this.prisma.profile;
+  }
+
+  get skill() {
+    return this.prisma.skill;
+  }
+
+  get project() {
+    return this.prisma.project;
+  }
+
+  get projectImage() {
+    return this.prisma.projectImage;
+  }
+
+  get experience() {
+    return this.prisma.experience;
+  }
+
+  get education() {
+    return this.prisma.education;
+  }
+
+  get contactMessage() {
+    return this.prisma.contactMessage;
+  }
+
+  get auditLog() {
+    return this.prisma.auditLog;
+  }
+
+  // ============================================
+  // TRANSACTION SUPPORT
+  // ============================================
+
+  async $transaction<T>(fn: (prisma: PrismaClient) => Promise<T>): Promise<T> {
+    return this.prisma.$transaction(fn);
+  }
+
+  // ============================================
+  // RAW QUERY SUPPORT (if needed)
+  // ============================================
+
+  async $queryRaw<T = unknown>(query: string, ...params: any[]): Promise<T> {
+    return this.prisma.$queryRaw<T>(query, ...params);
   }
 }
