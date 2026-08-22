@@ -11,7 +11,7 @@
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink, Github } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react"; // ← REMOVED Github
 
 // Base URL for API calls
 const API_URL =
@@ -63,7 +63,6 @@ export default async function ProjectDetailPage({
     if (response.ok) {
       project = await response.json();
     } else if (response.status === 404) {
-      // Project not found - show 404 page
       notFound();
     } else {
       console.error("Failed to fetch project:", response.status);
@@ -80,7 +79,6 @@ export default async function ProjectDetailPage({
   return (
     <div className="min-h-screen py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        {/* Back Link */}
         <Link
           href="/projects"
           className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-8"
@@ -89,7 +87,6 @@ export default async function ProjectDetailPage({
           Back to Projects
         </Link>
 
-        {/* Error State */}
         {error && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-6 py-8 text-center dark:border-red-900/50 dark:bg-red-950/20">
             <p className="text-red-600 dark:text-red-400">
@@ -98,22 +95,18 @@ export default async function ProjectDetailPage({
           </div>
         )}
 
-        {/* Project Content */}
         {project && (
           <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-6 sm:p-8 md:p-10">
-            {/* Title */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               {project.title}
             </h1>
 
-            {/* Description */}
             {project.description && (
               <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
                 {project.description}
               </p>
             )}
 
-            {/* Tech Stack */}
             {project.techStack && project.techStack.length > 0 && (
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
@@ -132,7 +125,6 @@ export default async function ProjectDetailPage({
               </div>
             )}
 
-            {/* Features */}
             {project.features && project.features.length > 0 && (
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
@@ -146,7 +138,6 @@ export default async function ProjectDetailPage({
               </div>
             )}
 
-            {/* Problem */}
             {project.problem && (
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
@@ -158,7 +149,6 @@ export default async function ProjectDetailPage({
               </div>
             )}
 
-            {/* Solution */}
             {project.solution && (
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
@@ -170,7 +160,6 @@ export default async function ProjectDetailPage({
               </div>
             )}
 
-            {/* Challenge */}
             {project.challenge && (
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
@@ -182,7 +171,6 @@ export default async function ProjectDetailPage({
               </div>
             )}
 
-            {/* Lessons */}
             {project.lessons && (
               <div className="mb-6">
                 <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
@@ -194,7 +182,6 @@ export default async function ProjectDetailPage({
               </div>
             )}
 
-            {/* Links */}
             <div className="flex flex-wrap gap-4 mt-8 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
               {project.demoUrl && (
                 <a
