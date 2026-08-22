@@ -1,10 +1,11 @@
 // backend/src/modules/auth/two-factor.service.ts
-import { Injectable } from "@nestjs/common"; // removed BadRequestException
+import { Injectable } from "@nestjs/common";
 import * as speakeasy from "speakeasy";
 import * as QRCode from "qrcode";
 import { Logger } from "nestjs-pino";
 import { PrismaService } from "../prisma/prisma.service";
-import * as argon2 from "argon2";
+// ✅ REPLACE argon2 with bcrypt
+import * as bcrypt from "bcrypt";
 
 @Injectable()
 export class TwoFactorService {
@@ -56,7 +57,8 @@ export class TwoFactorService {
     for (let i = 0; i < 10; i++) {
       const code = Math.random().toString(36).substring(2, 10).toUpperCase();
       plainCodes.push(code);
-      const hashed = await argon2.hash(code);
+      // ✅ REPLACE argon2.hash() with bcrypt.hash()
+      const hashed = await bcrypt.hash(code, 10);
       hashedCodes.push(hashed);
     }
 
@@ -76,7 +78,8 @@ export class TwoFactorService {
     const storedHashes: string[] = JSON.parse(user.backupCodes);
 
     for (let i = 0; i < storedHashes.length; i++) {
-      const isValid = await argon2.verify(storedHashes[i], code);
+      // ✅ REPLACE argon2.verify() with bcrypt.compare()
+      const isValid = await bcrypt.compare(code, storedHashes[i]);
       if (isValid) {
         storedHashes.splice(i, 1);
         await this.prisma.user.update({
