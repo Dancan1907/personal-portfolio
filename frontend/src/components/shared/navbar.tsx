@@ -5,7 +5,7 @@
 
 "use client"; // ← THIS IS CRITICAL - Must be the first line!
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/providers/auth-provider";
@@ -36,8 +36,52 @@ const navigationLinks = [
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [adminRevealed, setAdminRevealed] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+  const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
+
   const pathname = usePathname();
   const { user } = useAuth();
+
+  // ============================================
+  // DOUBLE-CLICK LOGO TO REVEAL ADMIN LINK
+  // ============================================
+  const handleLogoClick = () => {
+    setClickCount((prev) => prev + 1);
+
+    // Clear previous timeout
+    if (clickTimeout) {
+      clearTimeout(clickTimeout);
+      setClickTimeout(null);
+    }
+
+    // If double-click detected (2 clicks within 500ms)
+    if (clickCount + 1 === 2) {
+      setAdminRevealed(true);
+      setClickCount(0);
+
+      // Auto-hide admin link after 10 seconds of inactivity
+      const timeout = setTimeout(() => {
+        setAdminRevealed(false);
+      }, 10000);
+      setClickTimeout(timeout);
+    } else {
+      // Reset click count after 500ms if no second click
+      const timeout = setTimeout(() => {
+        setClickCount(0);
+      }, 500);
+      setClickTimeout(timeout);
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (clickTimeout) {
+        clearTimeout(clickTimeout);
+      }
+    };
+  }, [clickTimeout]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -58,10 +102,12 @@ export default function Navbar() {
     <nav className="sticky top-0 z-50 w-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* Logo / Brand Name - Double Click to reveal admin link */}
           <Link
             href="/"
-            className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            onClick={handleLogoClick}
+            className="flex items-center gap-2 text-xl font-bold text-gray-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer select-none"
+            title="Double-click to reveal admin access"
           >
             <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text">
               Dancan
@@ -72,7 +118,7 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* ===== DESKTOP NAVIGATION ===== */}
           <div className="hidden md:flex items-center gap-1">
             {navigationLinks.map((link) => {
               const Icon = link.icon;
@@ -95,24 +141,38 @@ export default function Navbar() {
               );
             })}
 
-            {user && (
+            {/* ===== ADMIN DASHBOARD LINK - Only visible when revealed ===== */}
+            {adminRevealed && (
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 animate-pulse"
               >
                 <LayoutDashboard className="w-4 h-4" />
-                Dashboard
+                Admin Dashboard
               </Link>
             )}
 
+            {/* Theme Toggle */}
             <div className="ml-2">
               <ThemeToggle />
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* ===== MOBILE MENU BUTTON ===== */}
           <div className="flex md:hidden items-center gap-2">
             <ThemeToggle />
+
+            {/* Admin link on mobile (when revealed) */}
+            {adminRevealed && (
+              <Link
+                href="/dashboard"
+                onClick={closeMobileMenu}
+                className="p-2 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+              >
+                <LayoutDashboard className="w-5 h-5" />
+              </Link>
+            )}
+
             <button
               onClick={toggleMobileMenu}
               className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -128,7 +188,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Navigation Dropdown */}
+      {/* ===== MOBILE NAVIGATION DROPDOWN ===== */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50">
           <div className="px-4 py-3 space-y-1">
@@ -154,14 +214,15 @@ export default function Navbar() {
               );
             })}
 
-            {user && (
+            {/* Admin Dashboard Link on mobile (when revealed) */}
+            {adminRevealed && (
               <Link
                 href="/dashboard"
                 onClick={closeMobileMenu}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
               >
                 <LayoutDashboard className="w-5 h-5" />
-                Dashboard
+                Admin Dashboard
               </Link>
             )}
           </div>
