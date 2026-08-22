@@ -1,18 +1,14 @@
-// ============================================
-// REFRESH STRATEGY - Simplified Version
-// ============================================
-
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
 @Injectable()
-export class RefreshStrategy extends PassportStrategy(Strategy, "jwt-refresh") {
+export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromBodyField("refresh_token"),
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_REFRESH_SECRET || "default-refresh-secret",
+      secretOrKey: process.env.JWT_SECRET || "default-secret-key",
     });
   }
 
