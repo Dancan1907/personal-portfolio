@@ -1,3 +1,4 @@
+// backend/src/modules/auth/auth.module.ts
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
@@ -13,19 +14,14 @@ import { TwoFactorService } from "./two-factor.service";
 
 @Module({
   imports: [
-    // PassportModule registers the strategies
     PassportModule,
-    // JwtModule registers JwtService with default options
-    // We'll override the secret per method call in AuthService, so we just register it.
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: "15m" },
     }),
-    // Import PrismaModule so we can use PrismaService
     PrismaModule,
     EmailModule,
   ],
-  // Provide the service and strategies
   providers: [
     AuthService,
     JwtStrategy,
@@ -33,9 +29,7 @@ import { TwoFactorService } from "./two-factor.service";
     RefreshStrategy,
     TwoFactorService,
   ],
-  // Expose the controller
   controllers: [AuthController, TwoFactorController],
-  // Export AuthService in case other modules need it
   exports: [AuthService],
 })
 export class AuthModule {}
