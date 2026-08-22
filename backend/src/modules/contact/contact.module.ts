@@ -6,12 +6,22 @@
 // and admin endpoints for managing them
 
 import { Module } from "@nestjs/common";
+import { JwtModule } from "@nestjs/jwt"; // ← ADD THIS
 import { ContactController } from "./contact.controller";
 import { ContactService } from "./contact.service";
+import { EmailModule } from "../email/email.module"; // ← KEEP THIS
 
 @Module({
-  controllers: [ContactController], // Register the controller
-  providers: [ContactService], // Register the service
-  exports: [ContactService], // Make service available to other modules
+  imports: [
+    // ✅ ADD THIS BLOCK
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: "15m" },
+    }),
+    EmailModule, // ← KEEP THIS
+  ],
+  controllers: [ContactController],
+  providers: [ContactService],
+  exports: [ContactService],
 })
 export class ContactModule {}

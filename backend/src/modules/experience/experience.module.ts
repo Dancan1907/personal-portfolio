@@ -5,12 +5,20 @@
 // It provides endpoints for public viewing and admin CRUD
 
 import { Module } from "@nestjs/common";
+import { JwtModule } from "@nestjs/jwt"; // ← ADD THIS
 import { ExperienceController } from "./experience.controller";
 import { ExperienceService } from "./experience.service";
 
 @Module({
-  controllers: [ExperienceController], // Register the controller
-  providers: [ExperienceService], // Register the service
-  exports: [ExperienceService], // Make service available to other modules
+  imports: [
+    // ✅ ADD THIS BLOCK
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: "15m" },
+    }),
+  ],
+  controllers: [ExperienceController],
+  providers: [ExperienceService],
+  exports: [ExperienceService],
 })
 export class ExperienceModule {}

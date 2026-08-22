@@ -5,12 +5,20 @@
 // It provides endpoints for public viewing and admin CRUD
 
 import { Module } from "@nestjs/common";
+import { JwtModule } from "@nestjs/jwt"; // ← ADD THIS
 import { EducationController } from "./education.controller";
 import { EducationService } from "./education.service";
 
 @Module({
-  controllers: [EducationController], // Register the controller
-  providers: [EducationService], // Register the service
-  exports: [EducationService], // Make service available to other modules
+  imports: [
+    // ✅ ADD THIS BLOCK
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: "15m" },
+    }),
+  ],
+  controllers: [EducationController],
+  providers: [EducationService],
+  exports: [EducationService],
 })
 export class EducationModule {}

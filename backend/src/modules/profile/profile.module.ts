@@ -5,14 +5,20 @@
 // It provides endpoints for creating, reading, and updating profiles
 
 import { Module } from "@nestjs/common";
+import { JwtModule } from "@nestjs/jwt"; // ← ADD THIS
 import { ProfileController } from "./profile.controller";
 import { ProfileService } from "./profile.service";
 
 @Module({
-  // We don't import PrismaModule here because it's already global
-  // We'll inject PrismaService directly in ProfileService
-  controllers: [ProfileController], // Register the controller
-  providers: [ProfileService], // Register the service
-  exports: [ProfileService], // Make service available to other modules
+  imports: [
+    // ✅ ADD THIS BLOCK
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: "15m" },
+    }),
+  ],
+  controllers: [ProfileController],
+  providers: [ProfileService],
+  exports: [ProfileService],
 })
 export class ProfileModule {}
