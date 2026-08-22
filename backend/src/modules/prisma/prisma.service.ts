@@ -84,20 +84,32 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   // TRANSACTION SUPPORT
   // ============================================
 
-  async $transaction<T>(fn: (prisma: PrismaClient) => Promise<T>): Promise<T> {
+  // ✅ FIX: Use the correct type signature for Prisma transactions
+  async $transaction<T>(
+    fn: (
+      prisma: Omit<
+        PrismaClient,
+        | "$connect"
+        | "$disconnect"
+        | "$on"
+        | "$transaction"
+        | "$use"
+        | "$extends"
+      >,
+    ) => Promise<T>,
+  ): Promise<T> {
     return this.prisma.$transaction(fn);
   }
 
   // ============================================
-  // RAW QUERY SUPPORT (if needed)
+  // RAW QUERY SUPPORT (optional - remove if not used)
   // ============================================
 
-  // ✅ FIX: Use template literal syntax for Prisma's $queryRaw
-  // This method is optional - remove if you don't use raw queries
-  async $queryRaw<T = unknown>(
-    strings: TemplateStringsArray,
-    ...values: any[]
-  ): Promise<T> {
-    return this.prisma.$queryRaw<T>(strings, ...values);
-  }
+  // If you don't use raw queries, you can remove this method
+  // async $queryRaw<T = unknown>(
+  //   strings: TemplateStringsArray,
+  //   ...values: any[]
+  // ): Promise<T> {
+  //   return this.prisma.$queryRaw<T>(strings, ...values);
+  // }
 }
