@@ -18,6 +18,7 @@ build
 .env
 .env.local
 .env.*.local
+.env.production
 
 # logs
 logs
@@ -35,4 +36,5 @@ logs
 *.pem
 
 # Uploads
-uploads/
+uploads/.env.production
+.env.local
