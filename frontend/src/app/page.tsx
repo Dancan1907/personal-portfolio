@@ -1,6 +1,7 @@
-// frontend/src/app/page.tsx
+"use client";
+
 // ============================================
-// HOME PAGE - Server Component
+// HOME PAGE - Client Component
 // ============================================
 // This is the main landing page for the portfolio
 // Features:
@@ -11,44 +12,51 @@
 import HeroSection from "@/components/home/hero-section";
 import FeaturedProjects from "@/components/home/featured-projects";
 import SkillsPreview from "@/components/home/skills-preview";
+import { useState, useEffect } from "react";
 
-// Base URL for API calls
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
-export default async function HomePage() {
-  // ============================================
-  // FETCH FEATURED PROJECTS
-  // ============================================
-  let featuredProjects = [];
-  try {
-    const response = await fetch(`${API_URL}/projects/featured`, {
-      cache: "no-store",
-    });
-    if (response.ok) {
-      featuredProjects = await response.json();
-    } else {
-      console.error("Failed to fetch featured projects:", response.status);
-    }
-  } catch (error) {
-    console.error("Error fetching featured projects:", error);
-  }
+export default function HomePage() {
+  const [featuredProjects, setFeaturedProjects] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // ============================================
-  // FETCH SKILLS
-  // ============================================
-  let skills = [];
-  try {
-    const response = await fetch(`${API_URL}/skills`, {
-      cache: "no-store",
-    });
-    if (response.ok) {
-      skills = await response.json();
-    } else {
-      console.error("Failed to fetch skills:", response.status);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // Fetch featured projects
+        const projectsRes = await fetch(`${API_URL}/projects/featured`);
+        if (projectsRes.ok) {
+          const projectsData = await projectsRes.json();
+          setFeaturedProjects(projectsData);
+        }
+
+        // Fetch skills
+        const skillsRes = await fetch(`${API_URL}/skills`);
+        if (skillsRes.ok) {
+          const skillsData = await skillsRes.json();
+          setSkills(skillsData);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
     }
-  } catch (error) {
-    console.error("Error fetching skills:", error);
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-600 border-t-transparent"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
