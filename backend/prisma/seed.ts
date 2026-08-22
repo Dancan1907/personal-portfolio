@@ -1,58 +1,82 @@
-// Import Prisma client and the Role enum
+// ============================================
+// SEED SCRIPT - Creates your admin account only
+// ============================================
+// This script creates ONLY your admin account.
+// No demo users are created.
+// Credentials are read from .env for security.
+
 import { PrismaClient, Role } from "@prisma/client";
-// Import argon2 for password hashing
 import * as argon2 from "argon2";
 
-// Instantiate PrismaClient – this will connect to the database
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Seeding database...");
 
-  // Generate hashes for the default passwords
-  // We use argon2.hash() which is asynchronous and returns a string
-  const adminPassword = await argon2.hash("Admin123!");
-  const userPassword = await argon2.hash("User123!");
+  // ============================================
+  // GET ADMIN CREDENTIALS FROM ENVIRONMENT
+  // ============================================
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminName = process.env.ADMIN_NAME || "Admin User";
 
-  // Upsert: if user with email exists, do nothing (update: {}) ; else create
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@admin.com" },
-    update: {}, // No update needed
-    create: {
-      email: "admin@admin.com",
-      password: adminPassword,
-      name: "Admin User",
+  // Validate environment variables
+  if (!adminEmail || !adminPassword) {
+    console.error("\n❌ ERROR: Missing environment variables!");
+    console.error("   Please add these to your backend/.env file:");
+    console.error("   ADMIN_EMAIL=your-email@example.com");
+    console.error("   ADMIN_PASSWORD=your-password");
+    console.error("   ADMIN_NAME=Your Name\n");
+    process.exit(1);
+  }
+
+  // ============================================
+  // CHECK IF ADMIN ALREADY EXISTS
+  // ============================================
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: adminEmail },
+  });
+
+  if (existingAdmin) {
+    console.log(`✅ Admin already exists: ${adminEmail}`);
+    console.log(`   Role: ${existingAdmin.role}`);
+    console.log("   No changes made.");
+    console.log("\n✅ Seeding complete!");
+    return;
+  }
+
+  // ============================================
+  // CREATE ADMIN USER
+  // ============================================
+  const hashedPassword = await argon2.hash(adminPassword);
+
+  const admin = await prisma.user.create({
+    data: {
+      email: adminEmail,
+      password: hashedPassword,
+      name: adminName,
       role: Role.ADMIN,
       isActive: true,
       emailVerified: true,
-      // refreshToken is omitted – it will be null by default
     },
   });
+
   console.log(`✅ Admin created: ${admin.email}`);
+  console.log(`   Role: ${admin.role}`);
+  console.log(`   Name: ${admin.name}`);
+  console.log("\n🔑 You can now log in with your email and password.");
 
-  const user = await prisma.user.upsert({
-    where: { email: "user@user.com" },
-    update: {},
-    create: {
-      email: "user@user.com",
-      password: userPassword,
-      name: "Regular User",
-      role: Role.USER,
-      isActive: true,
-      emailVerified: true,
-    },
-  });
-  console.log(`✅ User created: ${user.email}`);
-
-  console.log("✅ Seeding complete!");
+  console.log("\n✅ Seeding complete!");
 }
 
+// ============================================
+// EXECUTE SEED WITH ERROR HANDLING
+// ============================================
 main()
   .catch((e) => {
     console.error("❌ Seeding failed:", e);
     process.exit(1);
   })
   .finally(async () => {
-    // Disconnect Prisma client after seeding
     await prisma.$disconnect();
   });
