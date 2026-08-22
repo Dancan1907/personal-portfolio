@@ -2,37 +2,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/providers/auth-provider";
-import { ThemeProvider } from "@/providers/theme-provider";
-import ToastProvider from "@/components/toast-provider";
-import Navbar from "@/components/shared/navbar";
-import Footer from "@/components/shared/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: {
-    default: "Dancan Kalerwa | Portfolio",
-    template: "%s | Dancan Kalerwa",
-  },
-  description:
-    "Full-stack developer portfolio showcasing projects, skills, and experience.",
-  openGraph: {
-    title: "Dancan Kalerwa | Portfolio",
-    description:
-      "Full-stack developer portfolio showcasing projects, skills, and experience.",
-    url: "https://your-portfolio.com",
-    siteName: "Dancan Kalerwa",
-    images: [
-      {
-        url: "https://your-portfolio.com/og-image.png",
-        width: 1200,
-        height: 630,
-      },
-    ],
-    locale: "en_US",
-    type: "website",
-  },
+  title: "Dancan Kalerwa | Portfolio",
+  description: "Full-stack developer portfolio",
 };
 
 export default function RootLayout({
@@ -43,14 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} flex flex-col min-h-screen`}>
-        <ThemeProvider>
-          <AuthProvider>
-            <Navbar />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-            <ToastProvider />
-          </AuthProvider>
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );
