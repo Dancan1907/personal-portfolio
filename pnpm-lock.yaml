@@ -161,6 +161,9 @@ importers:
       "@types/qrcode":
         specifier: ^1.5.6
         version: 1.5.6
+      "@types/react":
+        specifier: ^18.2.0
+        version: 18.3.31
       "@types/speakeasy":
         specifier: ^2.0.10
         version: 2.0.10
