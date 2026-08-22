@@ -2,7 +2,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
-import * as argon2 from "argon2";
+import * as bcrypt from "bcrypt"; // ✅ REPLACE argon2 with bcrypt
 import { AppModule } from "../../app.module";
 import { PrismaService } from "../prisma/prisma.service";
 import { EmailService } from "../email/email.service";
@@ -65,7 +65,6 @@ describe("AuthController (Integration)", () => {
 
   describe("POST /api/v1/auth/register", () => {
     it("should register a new user", async () => {
-      // Ensure email doesn't exist
       await prismaService.user.deleteMany({
         where: { email: "integration-test@example.com" },
       });
@@ -92,7 +91,7 @@ describe("AuthController (Integration)", () => {
     });
 
     it("should return 409 if email already exists", async () => {
-      const hashedPassword = await argon2.hash("Password123!");
+      const hashedPassword = await bcrypt.hash("Password123!", 10); // ✅ bcrypt
       await prismaService.user.upsert({
         where: { email: "existing@example.com" },
         update: {
@@ -147,7 +146,7 @@ describe("AuthController (Integration)", () => {
 
   describe("POST /api/v1/auth/login", () => {
     beforeEach(async () => {
-      const hashedPassword = await argon2.hash("Password123!");
+      const hashedPassword = await bcrypt.hash("Password123!", 10); // ✅ bcrypt
       await prismaService.user.upsert({
         where: { email: "login-test@example.com" },
         update: {
@@ -195,7 +194,7 @@ describe("AuthController (Integration)", () => {
     });
 
     it("should return 401 for unverified email", async () => {
-      const hashedPassword = await argon2.hash("Password123!");
+      const hashedPassword = await bcrypt.hash("Password123!", 10); // ✅ bcrypt
       await prismaService.user.upsert({
         where: { email: "unverified@example.com" },
         update: {
@@ -229,7 +228,7 @@ describe("AuthController (Integration)", () => {
     let refreshToken: string;
 
     beforeEach(async () => {
-      const hashedPassword = await argon2.hash("Password123!");
+      const hashedPassword = await bcrypt.hash("Password123!", 10); // ✅ bcrypt
       await prismaService.user.upsert({
         where: { email: "refresh-test@example.com" },
         update: {
