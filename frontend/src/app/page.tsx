@@ -1,9 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import HeroSection from "@/components/home/hero-section";
-import FeaturedProjects from "@/components/home/featured-projects";
-import SkillsPreview from "@/components/home/skills-preview";
+import dynamic from "next/dynamic";
+
+// ✅ Dynamically import components with SSR disabled
+const HeroSection = dynamic(() => import("@/components/home/hero-section"), {
+  ssr: false,
+});
+
+const FeaturedProjects = dynamic(
+  () => import("@/components/home/featured-projects"),
+  { ssr: false },
+);
+
+const SkillsPreview = dynamic(
+  () => import("@/components/home/skills-preview"),
+  { ssr: false },
+);
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
