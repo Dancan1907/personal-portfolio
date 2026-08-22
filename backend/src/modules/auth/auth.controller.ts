@@ -5,10 +5,9 @@ import {
   Body,
   UseGuards,
   Request as Req,
-  UnauthorizedException, // ← ADDED
+  UnauthorizedException,
 } from "@nestjs/common";
 import { Request } from "express";
-import { ConfigService } from "@nestjs/config"; // ← ADDED
 import { AuthService } from "./auth.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
@@ -31,10 +30,7 @@ import {
 @ApiTags("Authentication")
 @Controller("auth")
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-    private readonly configService: ConfigService, // ← ADDED
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Public()
   @Post("register")
@@ -49,14 +45,11 @@ export class AuthController {
   @ApiResponse({ status: 409, description: "Email already registered" })
   async register(@Body() dto: RegisterDto) {
     // ============================================
-    // DISABLE REGISTRATION IN PRODUCTION
+    // REGISTRATION IS PERMANENTLY DISABLED
     // ============================================
-    const nodeEnv = this.configService.get<string>("NODE_ENV");
-    if (nodeEnv === "production") {
-      throw new UnauthorizedException("Registration is disabled");
-    }
-
-    return this.authService.register(dto);
+    // Only the admin account exists (created via seed)
+    // No new accounts can be created
+    throw new UnauthorizedException("Registration is disabled");
   }
 
   @Public()
