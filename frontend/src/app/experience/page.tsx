@@ -115,7 +115,7 @@ export default async function ExperiencePage() {
             {/* Timeline Line */}
             <div className="absolute left-4 md:left-8 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
 
-            {experiences.map((experience, index) => (
+            {experiences.map((experience) => (
               <div
                 key={experience.id}
                 className="relative pl-12 md:pl-16 pb-10 last:pb-0"

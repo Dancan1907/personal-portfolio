@@ -41,7 +41,7 @@ export default function Navbar() {
   const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const pathname = usePathname();
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   // ============================================
   // DOUBLE-CLICK LOGO TO REVEAL ADMIN LINK
