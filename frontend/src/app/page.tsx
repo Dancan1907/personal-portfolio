@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 
-// ✅ Dynamically import components with SSR disabled
+// ✅ Completely disable SSR for the entire page
 const HeroSection = dynamic(() => import("@/components/home/hero-section"), {
   ssr: false,
 });
@@ -25,8 +25,15 @@ export default function HomePage() {
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     async function fetchData() {
       try {
         const [projectsRes, skillsRes] = await Promise.all([
@@ -51,7 +58,12 @@ export default function HomePage() {
     }
 
     fetchData();
-  }, []);
+  }, [mounted]);
+
+  // ✅ Show nothing during SSR to avoid hydration mismatch
+  if (!mounted) {
+    return null;
+  }
 
   if (loading) {
     return (
