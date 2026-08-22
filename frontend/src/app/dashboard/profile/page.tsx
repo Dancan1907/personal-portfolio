@@ -125,8 +125,14 @@ export default function ProfileManagement() {
       }
     } catch (err) {
       console.error("Error fetching profile:", err);
-      if (err.response?.status === 404) {
-        setError("No profile found. Fill in the form below to create one.");
+      // ✅ Type guard for Axios error
+      if (typeof err === "object" && err !== null && "response" in err) {
+        const axiosError = err as { response?: { status?: number } };
+        if (axiosError.response?.status === 404) {
+          setError("No profile found. Fill in the form below to create one.");
+        } else {
+          setError("Failed to load profile. Please try again.");
+        }
       } else {
         setError("Failed to load profile. Please try again.");
       }
