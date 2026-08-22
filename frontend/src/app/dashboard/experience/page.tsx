@@ -18,7 +18,7 @@ import {
   Edit2,
   Trash2,
   X,
-  Briefcase,
+  // ❌ REMOVE: Briefcase,
   Calendar,
   MapPin,
 } from "lucide-react";
