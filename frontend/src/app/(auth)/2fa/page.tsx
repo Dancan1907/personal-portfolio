@@ -8,8 +8,6 @@ import { isAxiosError } from "axios";
 import {
   Shield,
   ArrowLeft,
-  Lock,
-  KeyRound,
   CheckCircle,
   AlertCircle,
   Smartphone,
