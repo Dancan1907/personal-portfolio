@@ -32,6 +32,11 @@ import {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  /**
+   * REGISTRATION IS PERMANENTLY DISABLED
+   * Only the admin account exists (created via seed)
+   * No new accounts can be created
+   */
   @Public()
   @Post("register")
   // Limit to 5 requests per minute for registration
@@ -43,12 +48,9 @@ export class AuthController {
     type: TokenResponseDto,
   })
   @ApiResponse({ status: 409, description: "Email already registered" })
-  async register(@Body() dto: RegisterDto) {
-    // ============================================
-    // REGISTRATION IS PERMANENTLY DISABLED
-    // ============================================
-    // Only the admin account exists (created via seed)
-    // No new accounts can be created
+  async register(@Body() _dto: RegisterDto) {
+    // The underscore prefix tells TypeScript/ESLint this parameter is intentionally unused
+    // Registration is permanently disabled for security
     throw new UnauthorizedException("Registration is disabled");
   }
 
@@ -80,8 +82,8 @@ export class AuthController {
     type: TokenResponseDto,
   })
   @ApiResponse({ status: 401, description: "Invalid credentials" })
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
   }
 
   @Public()
