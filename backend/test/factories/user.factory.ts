@@ -1,6 +1,6 @@
 // backend/test/factories/user.factory.ts
 import { Role } from "@prisma/client";
-import * as argon2 from "argon2";
+import * as bcrypt from "bcrypt"; // ✅ REPLACE argon2 with bcrypt
 
 export interface CreateUserOptions {
   email?: string;
@@ -21,7 +21,7 @@ export async function createTestUser(options: CreateUserOptions = {}) {
     emailVerified = false,
   } = options;
 
-  const hashedPassword = await argon2.hash(password);
+  const hashedPassword = await bcrypt.hash(password, 10); // ✅ bcrypt
 
   return {
     email,
