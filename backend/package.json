@@ -21,6 +21,7 @@
     "generate-api": "openapi-generator-cli generate -i http://localhost:3001/api/docs-json -g typescript-axios -o ../frontend/src/lib/api"
   },
   "dependencies": {
+    "@nestjs/cli": "^10.0.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^10.0.0",
@@ -49,10 +50,10 @@
     "resend": "^6.20.0",
     "rxjs": "^7.8.0",
     "speakeasy": "^2.0.0",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "typescript": "^5.0.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.0.0",
     "@nestjs/testing": "^11.1.28",
     "@openapitools/openapi-generator-cli": "^2.40.1",
     "@repo/eslint-config": "workspace:*",
@@ -75,8 +76,7 @@
     "supertest": "^7.2.2",
     "testcontainers": "^12.0.4",
     "ts-jest": "^29.4.12",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.0.0"
+    "ts-node": "^10.9.2"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
