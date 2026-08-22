@@ -6,10 +6,10 @@ import { JwtService } from "@nestjs/jwt";
 import { EmailService } from "../email/email.service";
 import { Logger } from "nestjs-pino";
 import { ConflictException, UnauthorizedException } from "@nestjs/common";
-import * as argon2 from "argon2";
+import * as bcrypt from "bcrypt"; // ✅ REPLACE argon2 with bcrypt
 import { createMockUser } from "../../../test/factories/user.factory";
 
-jest.mock("argon2");
+jest.mock("bcrypt"); // ✅ Update jest mock
 
 describe("AuthService", () => {
   let service: AuthService;
@@ -62,7 +62,7 @@ describe("AuthService", () => {
         name: "Test User",
       };
 
-      (argon2.hash as jest.Mock).mockResolvedValue("hashed-password");
+      (bcrypt.hash as jest.Mock).mockResolvedValue("hashed-password"); // ✅ bcrypt
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
       const mockUser = createMockUser({
@@ -83,7 +83,7 @@ describe("AuthService", () => {
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: dto.email },
       });
-      expect(argon2.hash).toHaveBeenCalledWith(dto.password);
+      expect(bcrypt.hash).toHaveBeenCalledWith(dto.password, 10); // ✅ bcrypt
       expect(mockPrismaService.user.create).toHaveBeenCalled();
       expect(mockEmailService.sendVerificationEmail).toHaveBeenCalled();
       expect(result.user).toBeDefined();
@@ -129,16 +129,17 @@ describe("AuthService", () => {
       });
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
-      (argon2.verify as jest.Mock).mockResolvedValue(true);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true); // ✅ bcrypt
 
       const result = await service.login(dto);
 
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: dto.email },
       });
-      expect(argon2.verify).toHaveBeenCalledWith(
-        mockUser.password,
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        // ✅ bcrypt
         dto.password,
+        mockUser.password,
       );
       expect(result).toHaveProperty("access_token");
       expect(result).toHaveProperty("refresh_token");
@@ -192,7 +193,7 @@ describe("AuthService", () => {
       });
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
-      (argon2.verify as jest.Mock).mockResolvedValue(false);
+      (bcrypt.compare as jest.Mock).mockResolvedValue(false); // ✅ bcrypt
 
       await expect(service.login(dto)).rejects.toThrow(UnauthorizedException);
     });
