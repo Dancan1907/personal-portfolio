@@ -3,12 +3,11 @@
 // NAVBAR COMPONENT - Main Navigation
 // ============================================
 
-"use client"; // ← THIS IS CRITICAL - Must be the first line!
+"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/providers/auth-provider";
 import ThemeToggle from "@/components/theme-toggle";
 import {
   Menu,
@@ -41,7 +40,6 @@ export default function Navbar() {
   const [clickTimeout, setClickTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const pathname = usePathname();
-  // const { user } = useAuth();
 
   // ============================================
   // DOUBLE-CLICK LOGO TO REVEAL ADMIN LINK
@@ -49,24 +47,20 @@ export default function Navbar() {
   const handleLogoClick = () => {
     setClickCount((prev) => prev + 1);
 
-    // Clear previous timeout
     if (clickTimeout) {
       clearTimeout(clickTimeout);
       setClickTimeout(null);
     }
 
-    // If double-click detected (2 clicks within 500ms)
     if (clickCount + 1 === 2) {
       setAdminRevealed(true);
       setClickCount(0);
 
-      // Auto-hide admin link after 10 seconds of inactivity
       const timeout = setTimeout(() => {
         setAdminRevealed(false);
       }, 10000);
       setClickTimeout(timeout);
     } else {
-      // Reset click count after 500ms if no second click
       const timeout = setTimeout(() => {
         setClickCount(0);
       }, 500);
@@ -74,7 +68,6 @@ export default function Navbar() {
     }
   };
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (clickTimeout) {
