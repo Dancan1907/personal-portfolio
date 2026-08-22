@@ -8,6 +8,8 @@
 // - Brief tagline
 // - CTA buttons (View Projects, Contact)
 
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Mail } from "lucide-react";
 import TypewriterEffect from "@/components/shared/typewriter-effect";

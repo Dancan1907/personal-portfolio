@@ -1,18 +1,9 @@
 "use client";
 
-// ============================================
-// HOME PAGE - Client Component
-// ============================================
-// This is the main landing page for the portfolio
-// Features:
-// - Hero section with typewriter effect
-// - Featured projects with scroll animations
-// - Skills preview with scroll animations
-
+import { useState, useEffect } from "react";
 import HeroSection from "@/components/home/hero-section";
 import FeaturedProjects from "@/components/home/featured-projects";
 import SkillsPreview from "@/components/home/skills-preview";
-import { useState, useEffect } from "react";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
@@ -25,15 +16,16 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch featured projects
-        const projectsRes = await fetch(`${API_URL}/projects/featured`);
+        const [projectsRes, skillsRes] = await Promise.all([
+          fetch(`${API_URL}/projects/featured`),
+          fetch(`${API_URL}/skills`),
+        ]);
+
         if (projectsRes.ok) {
           const projectsData = await projectsRes.json();
           setFeaturedProjects(projectsData);
         }
 
-        // Fetch skills
-        const skillsRes = await fetch(`${API_URL}/skills`);
         if (skillsRes.ok) {
           const skillsData = await skillsRes.json();
           setSkills(skillsData);
