@@ -92,7 +92,12 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   // RAW QUERY SUPPORT (if needed)
   // ============================================
 
-  async $queryRaw<T = unknown>(query: string, ...params: any[]): Promise<T> {
-    return this.prisma.$queryRaw<T>(query, ...params);
+  // ✅ FIX: Use template literal syntax for Prisma's $queryRaw
+  // This method is optional - remove if you don't use raw queries
+  async $queryRaw<T = unknown>(
+    strings: TemplateStringsArray,
+    ...values: any[]
+  ): Promise<T> {
+    return this.prisma.$queryRaw<T>(strings, ...values);
   }
 }
