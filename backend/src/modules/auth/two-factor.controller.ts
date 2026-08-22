@@ -22,9 +22,10 @@ import { Verify2faDto } from "./dto/verify-2fa.dto";
 import { Disable2faDto } from "./dto/disable-2fa.dto";
 import { Generate2faResponseDto } from "./dto/generate-2fa-response.dto";
 import { AuthService } from "./auth.service";
-import * as argon2 from "argon2";
+// ✅ REPLACE argon2 with bcrypt
+import * as bcrypt from "bcrypt";
 import { Logger } from "nestjs-pino";
-import { User } from "@prisma/client"; // Import the User type
+import { User } from "@prisma/client";
 
 @ApiTags("Two-Factor Authentication")
 @Controller("2fa")
@@ -45,11 +46,9 @@ export class TwoFactorController {
     type: Generate2faResponseDto,
   })
   async generate(@Request() req: any): Promise<Generate2faResponseDto> {
-    const user = req.user; // { userId, email, role }
-    // Generate the secret and QR code
+    const user = req.user;
     const result = await this.twoFactorService.generateSecret(user.email);
 
-    // Save the secret to the user's record
     await this.authService["prisma"].user.update({
       where: { id: user.userId },
       data: { twoFactorSecret: result.secret },
@@ -90,7 +89,7 @@ export class TwoFactorController {
 
     const isValid = this.twoFactorService.verifyTOTP(
       dbUser.twoFactorSecret,
-      dto.code!, // non-null assertion
+      dto.code!,
     );
 
     if (!isValid) {
@@ -124,7 +123,11 @@ export class TwoFactorController {
       throw new UnauthorizedException("User not found");
     }
 
-    const isValidPassword = await argon2.verify(dbUser.password, dto.password!);
+    // ✅ REPLACE argon2.verify() with bcrypt.compare()
+    const isValidPassword = await bcrypt.compare(
+      dto.password!,
+      dbUser.password,
+    );
     if (!isValidPassword) {
       throw new UnauthorizedException("Invalid password");
     }
@@ -209,7 +212,6 @@ export class TwoFactorController {
       throw new UnauthorizedException("Invalid TOTP or backup code");
     }
 
-    // Fetch full user details for response
     const fullUser = await this.authService["prisma"].user.findUnique({
       where: { id: userId },
       select: {
@@ -229,16 +231,13 @@ export class TwoFactorController {
       throw new UnauthorizedException("User not found");
     }
 
-    // Generate tokens
     const tokens = await this.authService["generateTokens"](fullUser as User);
 
-    // Store refresh token
     await this.authService["prisma"].user.update({
       where: { id: user.id },
       data: { refreshToken: tokens.refresh_token },
     });
 
-    // Return tokens and user info
     return {
       ...tokens,
       user: fullUser,
