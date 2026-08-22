@@ -28,6 +28,9 @@ importers:
 
   backend:
     dependencies:
+      "@nestjs/cli":
+        specifier: ^10.0.0
+        version: 10.4.9
       "@nestjs/common":
         specifier: ^10.0.0
         version: 10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -115,10 +118,10 @@ importers:
       swagger-ui-express:
         specifier: ^5.0.1
         version: 5.0.1(express@4.22.1)
+      typescript:
+        specifier: ^5.0.0
+        version: 5.9.3
     devDependencies:
-      "@nestjs/cli":
-        specifier: ^10.0.0
-        version: 10.4.9
       "@nestjs/testing":
         specifier: ^11.1.28
         version: 11.1.28(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22))
@@ -188,9 +191,6 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@20.19.43)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.0.0
-        version: 5.9.3
 
   frontend:
     dependencies:
