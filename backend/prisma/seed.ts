@@ -6,7 +6,8 @@
 // Credentials are read from .env for security.
 
 import { PrismaClient, Role } from "@prisma/client";
-import * as argon2 from "argon2";
+// ✅ REPLACE argon2 with bcrypt
+import * as bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
@@ -48,7 +49,8 @@ async function main() {
   // ============================================
   // CREATE ADMIN USER
   // ============================================
-  const hashedPassword = await argon2.hash(adminPassword);
+  // ✅ REPLACE argon2.hash() with bcrypt.hash()
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
   const admin = await prisma.user.create({
     data: {
