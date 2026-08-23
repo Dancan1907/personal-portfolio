@@ -75,20 +75,27 @@ function SocialLink({
 
 export default async function AboutPage() {
   // ============================================
-  // FETCH PROFILE DATA
+  // FETCH PROFILE DATA - USING AUTHENTICATED ENDPOINT
   // ============================================
   let profile: Profile | null = null;
   let error = false;
 
   try {
-    const userId =
-      process.env.NEXT_PUBLIC_USER_ID || "cmsm5wx01000014nu3hanmkp9";
-    const response = await fetch(`${API_URL}/profile/public/${userId}`, {
+    // ✅ FIX: Use the authenticated profile endpoint instead of public
+    // This returns the profile of the logged-in user (you)
+    // No userId needed!
+    const response = await fetch(`${API_URL}/profile`, {
       next: { revalidate: 3600 },
+      // No authorization header needed - this is a Server Component
+      // The backend will check for a valid session cookie
     });
 
     if (response.ok) {
       profile = await response.json();
+    } else if (response.status === 404) {
+      // Profile not found - this is fine, user can create one
+      console.log("Profile not found - user can create one");
+      error = false; // Don't show error, just show empty state
     } else {
       console.error("Failed to fetch profile:", response.status);
       error = true;
@@ -155,7 +162,8 @@ export default async function AboutPage() {
                       About Me
                     </h3>
                     <p className="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
-                      {`I'm a Computer Science student and aspiring software engineer focused on building modern, scalable web applications. I enjoy working across frontend, backend, databases, and APIs while continuously expanding my knowledge of cloud, DevOps, security, and AI/ML.`}
+                      {profile.bio ||
+                        `I'm a Computer Science student and aspiring software engineer focused on building modern, scalable web applications. I enjoy working across frontend, backend, databases, and APIs while continuously expanding my knowledge of cloud, DevOps, security, and AI/ML.`}
                     </p>
                   </div>
 
