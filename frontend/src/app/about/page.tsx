@@ -2,21 +2,13 @@
 // ABOUT PAGE - Server Component (FIXED)
 // ============================================
 // This page displays the portfolio owner's professional information
-// Features:
-// - Profile information (name, title, bio, location)
-// - Social links (GitHub, LinkedIn, Email)
-// - Career focus cards instead of fake stats
-// - Engineering journey progression
-// - Currently focused on section
 
 import { MapPin, Mail } from "lucide-react";
 import Link from "next/link";
 
-// Base URL for API calls
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
-// Type for profile data from the API
 type Profile = {
   id: string;
   name: string;
@@ -33,9 +25,7 @@ type Profile = {
   updatedAt: string;
 };
 
-// ============================================
-// INLINE SVG ICONS (Replacing lucide-react icons)
-// ============================================
+// Inline SVG icons
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -52,7 +42,6 @@ function LinkedinIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-// Helper function for social links
 function SocialLink({
   href,
   children,
@@ -66,7 +55,6 @@ function SocialLink({
       target="_blank"
       rel="noopener noreferrer"
       className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700/70 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-      aria-label="Social link"
     >
       {children}
     </a>
@@ -75,27 +63,22 @@ function SocialLink({
 
 export default async function AboutPage() {
   // ============================================
-  // FETCH PROFILE DATA - USING AUTHENTICATED ENDPOINT
+  // FETCH PROFILE DATA - PUBLIC ENDPOINT
   // ============================================
   let profile: Profile | null = null;
   let error = false;
 
   try {
-    // ✅ FIX: Use the authenticated profile endpoint instead of public
-    // This returns the profile of the logged-in user (you)
-    // No userId needed!
-    const response = await fetch(`${API_URL}/profile`, {
+    // ✅ Use the public endpoint with your user ID
+    const userId = "cmt491d3l00004pc194lqgdqn";
+    const response = await fetch(`${API_URL}/profile/public/${userId}`, {
       next: { revalidate: 3600 },
-      // No authorization header needed - this is a Server Component
-      // The backend will check for a valid session cookie
     });
 
     if (response.ok) {
       profile = await response.json();
     } else if (response.status === 404) {
-      // Profile not found - this is fine, user can create one
-      console.log("Profile not found - user can create one");
-      error = false; // Don't show error, just show empty state
+      console.log("Profile not found");
     } else {
       console.error("Failed to fetch profile:", response.status);
       error = true;
@@ -108,7 +91,6 @@ export default async function AboutPage() {
   return (
     <div className="min-h-screen py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        {/* Page Title */}
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 dark:text-white text-center mb-4">
           About Me
         </h1>
@@ -124,10 +106,9 @@ export default async function AboutPage() {
           </div>
         ) : profile ? (
           <>
-            {/* ===== MAIN PROFILE CARD ===== */}
+            {/* MAIN PROFILE CARD */}
             <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-6 sm:p-8 md:p-10 mb-10">
               <div className="flex flex-col md:flex-row gap-8 md:gap-12">
-                {/* Avatar Section */}
                 <div className="flex-shrink-0 flex justify-center md:block">
                   {profile.avatarUrl ? (
                     <img
@@ -142,7 +123,6 @@ export default async function AboutPage() {
                   )}
                 </div>
 
-                {/* Profile Details */}
                 <div className="flex-1 text-center md:text-left">
                   <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                     {profile.name}
@@ -167,7 +147,6 @@ export default async function AboutPage() {
                     </p>
                   </div>
 
-                  {/* Social Links */}
                   <div className="mt-6 flex flex-wrap gap-3 justify-center md:justify-start">
                     {profile.githubUrl && (
                       <SocialLink href={profile.githubUrl}>
@@ -197,7 +176,7 @@ export default async function AboutPage() {
               </div>
             </div>
 
-            {/* ===== CAREER FOCUS CARDS ===== */}
+            {/* Career Focus Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
               <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-4 text-center hover:border-indigo-500/50 transition-colors">
                 <h4 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
@@ -233,7 +212,7 @@ export default async function AboutPage() {
               </div>
             </div>
 
-            {/* ===== MY ENGINEERING JOURNEY ===== */}
+            {/* My Engineering Journey */}
             <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-6 sm:p-8 mb-10">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4 text-center">
                 My Engineering Journey
@@ -276,7 +255,7 @@ export default async function AboutPage() {
               </p>
             </div>
 
-            {/* ===== CURRENTLY FOCUSED ON ===== */}
+            {/* Currently Focused On */}
             <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-6 sm:p-8 mb-10">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 text-center">
                 Currently Focused On
@@ -363,7 +342,7 @@ export default async function AboutPage() {
               </div>
             </div>
 
-            {/* ===== WHAT I BUILD ===== */}
+            {/* What I Build */}
             <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 dark:border-gray-700/50 p-6 sm:p-8 text-center">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                 What I Build
