@@ -8,10 +8,15 @@
 // - Displays full project information
 // - Shows tech stack and features
 // - Handles 404 if project not found
+// - ✅ CACHE DISABLED - Always fetches fresh data
+
+// ✅ FORCE DYNAMIC RENDERING - Prevents Next.js from caching this page
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react"; // ← REMOVED Github
+import { ArrowLeft, ExternalLink } from "lucide-react";
 
 // Base URL for API calls
 const API_URL =
@@ -58,7 +63,10 @@ export default async function ProjectDetailPage({
   let error = false;
 
   try {
-    const response = await fetch(`${API_URL}/projects/slug/${params.slug}`);
+    // ✅ Explicitly disable caching to always get fresh data
+    const response = await fetch(`${API_URL}/projects/slug/${params.slug}`, {
+      cache: "no-store",
+    });
 
     if (response.ok) {
       project = await response.json();
