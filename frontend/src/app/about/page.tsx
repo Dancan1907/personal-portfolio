@@ -2,6 +2,11 @@
 // ABOUT PAGE - Server Component (FIXED)
 // ============================================
 // This page displays the portfolio owner's professional information
+// - ✅ CACHE DISABLED - Always fetches fresh data
+
+// ✅ FORCE DYNAMIC RENDERING - Prevents Next.js from caching this page
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 import { MapPin, Mail } from "lucide-react";
 import Link from "next/link";
@@ -71,8 +76,9 @@ export default async function AboutPage() {
   try {
     // ✅ Use the public endpoint with your user ID
     const userId = "cmt491d3l00004pc194lqgdqn";
+    // ✅ Explicitly disable caching to always get fresh data
     const response = await fetch(`${API_URL}/profile/public/${userId}`, {
-      next: { revalidate: 3600 },
+      cache: "no-store",
     });
 
     if (response.ok) {
