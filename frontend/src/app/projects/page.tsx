@@ -7,9 +7,15 @@
 // - Displays in a responsive grid
 // - Shows project cards with title, description, tech stack
 // - Links to individual project pages
+// - ✅ CACHE DISABLED - Always fetches fresh data
 
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+
+// ✅ FORCE DYNAMIC RENDERING - Prevents Next.js from caching this page
+// This ensures the projects list is always fresh from the API
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // Inline icon — lucide-react removed the Github brand icon in recent versions
 function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -47,8 +53,10 @@ export default async function ProjectsPage() {
   let error = false;
 
   try {
-    // ✅ REMOVED cache: "no-store" - using default fetch behavior
-    const response = await fetch(`${API_URL}/projects`);
+    // ✅ Explicitly disable caching to always get fresh data
+    const response = await fetch(`${API_URL}/projects`, {
+      cache: "no-store",
+    });
 
     if (response.ok) {
       const data = await response.json();
