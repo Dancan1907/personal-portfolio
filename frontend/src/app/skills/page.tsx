@@ -9,6 +9,11 @@
 // - Shows proficiency levels with progress bars
 // - Supports light/dark mode
 // - Responsive grid layout
+// - ✅ CACHE DISABLED - Always fetches fresh data
+
+// ✅ FORCE DYNAMIC RENDERING - Prevents Next.js from caching this page
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 import * as Icons from "lucide-react";
 
@@ -181,10 +186,9 @@ export default async function SkillsPage() {
   let error = false;
 
   try {
+    // ✅ Explicitly disable caching to always get fresh data
     const response = await fetch(`${API_URL}/skills`, {
-      next: {
-        revalidate: 3600,
-      },
+      cache: "no-store",
     });
 
     if (!response.ok) {
