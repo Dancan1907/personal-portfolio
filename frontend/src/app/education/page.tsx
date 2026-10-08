@@ -7,6 +7,11 @@
 // - Displays in chronological order (newest first)
 // - Shows institution, degree, field, dates
 // - Highlights current studies
+// - ✅ CACHE DISABLED - Always fetches fresh data
+
+// ✅ FORCE DYNAMIC RENDERING - Prevents Next.js from caching this page
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 import { GraduationCap, Calendar, MapPin } from "lucide-react";
 
@@ -61,7 +66,10 @@ export default async function EducationPage() {
   let error = false;
 
   try {
-    const response = await fetch(`${API_URL}/education`);
+    // ✅ Explicitly disable caching to always get fresh data
+    const response = await fetch(`${API_URL}/education`, {
+      cache: "no-store",
+    });
 
     if (response.ok) {
       const data = await response.json();
