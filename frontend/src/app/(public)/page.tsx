@@ -2,14 +2,17 @@
 // HOME PAGE - Server Component
 // ============================================
 // This page is the main landing page for the portfolio
-// It fetches data on the server and renders it statically
+// It fetches data on the server and renders it dynamically
 // Features:
 // - Hero section (static content)
 // - Featured projects (fetched from API)
 // - Skills preview (fetched from API)
+// - ✅ CACHE DISABLED - Always fetches fresh data
 
-// Since this is a Server Component, we can use async/await directly
-// No "use client" directive needed!
+// ✅ FORCE DYNAMIC RENDERING - Prevents Next.js from caching this page
+// This ensures the featured projects and skills are always fresh from the API
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 import HeroSection from "@/components/home/hero-section";
 import FeaturedProjects from "@/components/home/featured-projects";
@@ -25,13 +28,10 @@ export default async function HomePage() {
   // ============================================
   // FETCH FEATURED PROJECTS
   // ============================================
-  // We use fetch with cache: 'no-store' to always get fresh data
-  // In production, you might want to use revalidation instead
   let featuredProjects = [];
   try {
     const response = await fetch(`${API_URL}/projects/featured`, {
       cache: "no-store", // Don't cache - get fresh data on each request
-      // In production, consider using: next: { revalidate: 3600 } (1 hour)
     });
     if (response.ok) {
       featuredProjects = await response.json();
@@ -46,7 +46,6 @@ export default async function HomePage() {
   // ============================================
   // FETCH SKILLS
   // ============================================
-  // Get skills for the preview section
   let skills = [];
   try {
     const response = await fetch(`${API_URL}/skills`, {
