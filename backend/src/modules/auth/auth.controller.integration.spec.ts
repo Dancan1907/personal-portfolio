@@ -2,7 +2,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
-import * as bcrypt from "bcrypt"; // ✅ REPLACE argon2 with bcrypt
+import * as bcrypt from "bcrypt";
 import { AppModule } from "../../app.module";
 import { PrismaService } from "../prisma/prisma.service";
 import { EmailService } from "../email/email.service";
@@ -64,61 +64,19 @@ describe("AuthController (Integration)", () => {
   }, 15000);
 
   describe("POST /api/v1/auth/register", () => {
-    it("should register a new user", async () => {
-      await prismaService.user.deleteMany({
-        where: { email: "integration-test@example.com" },
-      });
-
-      const response = await request(app.getHttpServer())
+    // Registration is permanently disabled in the controller.
+    // The handler always throws UnauthorizedException, so the only
+    // meaningful assertions are (a) it rejects with 401 and (b) input
+    // validation still runs before the handler.
+    it("should reject registration with 401 (registration is disabled)", async () => {
+      await request(app.getHttpServer())
         .post("/api/v1/auth/register")
         .send({
           email: "integration-test@example.com",
           password: "Password123!",
           name: "Integration Test",
         })
-        .expect(201);
-
-      expect(response.body.user).toBeDefined();
-      expect(response.body.user.email).toBe("integration-test@example.com");
-      expect(response.body.user.emailVerified).toBe(false);
-      expect(response.body.message).toBeDefined();
-
-      const user = await prismaService.user.findUnique({
-        where: { email: "integration-test@example.com" },
-      });
-      expect(user).toBeDefined();
-      expect(user?.emailVerified).toBe(false);
-    });
-
-    it("should return 409 if email already exists", async () => {
-      const hashedPassword = await bcrypt.hash("Password123!", 10); // ✅ bcrypt
-      await prismaService.user.upsert({
-        where: { email: "existing@example.com" },
-        update: {
-          password: hashedPassword,
-          name: "Existing User",
-          emailVerified: true,
-          isActive: true,
-          role: "USER",
-        },
-        create: {
-          email: "existing@example.com",
-          password: hashedPassword,
-          name: "Existing User",
-          emailVerified: true,
-          isActive: true,
-          role: "USER",
-        },
-      });
-
-      await request(app.getHttpServer())
-        .post("/api/v1/auth/register")
-        .send({
-          email: "existing@example.com",
-          password: "Password123!",
-          name: "Duplicate User",
-        })
-        .expect(409);
+        .expect(401);
     });
 
     it("should return 400 for invalid email", async () => {
@@ -146,7 +104,7 @@ describe("AuthController (Integration)", () => {
 
   describe("POST /api/v1/auth/login", () => {
     beforeEach(async () => {
-      const hashedPassword = await bcrypt.hash("Password123!", 10); // ✅ bcrypt
+      const hashedPassword = await bcrypt.hash("Password123!", 10);
       await prismaService.user.upsert({
         where: { email: "login-test@example.com" },
         update: {
@@ -194,7 +152,7 @@ describe("AuthController (Integration)", () => {
     });
 
     it("should return 401 for unverified email", async () => {
-      const hashedPassword = await bcrypt.hash("Password123!", 10); // ✅ bcrypt
+      const hashedPassword = await bcrypt.hash("Password123!", 10);
       await prismaService.user.upsert({
         where: { email: "unverified@example.com" },
         update: {
@@ -225,12 +183,13 @@ describe("AuthController (Integration)", () => {
   });
 
   describe("POST /api/v1/auth/refresh", () => {
-    let refreshToken: string;
+    const email = "refresh-test@example.com";
+    const password = "Password123!";
 
     beforeEach(async () => {
-      const hashedPassword = await bcrypt.hash("Password123!", 10); // ✅ bcrypt
+      const hashedPassword = await bcrypt.hash(password, 10);
       await prismaService.user.upsert({
-        where: { email: "refresh-test@example.com" },
+        where: { email },
         update: {
           password: hashedPassword,
           name: "Refresh Test",
@@ -239,7 +198,7 @@ describe("AuthController (Integration)", () => {
           role: "USER",
         },
         create: {
-          email: "refresh-test@example.com",
+          email,
           password: hashedPassword,
           name: "Refresh Test",
           emailVerified: true,
@@ -247,23 +206,29 @@ describe("AuthController (Integration)", () => {
           role: "USER",
         },
       });
-
-      const loginResponse = await request(app.getHttpServer())
-        .post("/api/v1/auth/login")
-        .send({
-          email: "refresh-test@example.com",
-          password: "Password123!",
-        });
-
-      refreshToken = loginResponse.body.refresh_token;
     }, 10000);
 
     it("should refresh tokens successfully", async () => {
+      // Login inside the test (not in beforeEach) so this test performs
+      // exactly one login call. The login route is throttled at 5/min,
+      // and having beforeEach log in on top of the login-block tests
+      // pushed the suite over the limit, producing a 429 that left
+      // refreshToken undefined.
+      const loginResponse = await request(app.getHttpServer())
+        .post("/api/v1/auth/login")
+        .send({ email, password })
+        .expect(201);
+
+      const refreshToken = loginResponse.body.refresh_token as string;
+
+      // Sanity checks: catch a broken login response before the actual
+      // refresh assertion, so the failure points at login, not refresh.
+      expect(typeof refreshToken).toBe("string");
+      expect(refreshToken.length).toBeGreaterThan(20);
+
       const response = await request(app.getHttpServer())
         .post("/api/v1/auth/refresh")
-        .send({
-          refresh_token: refreshToken,
-        })
+        .send({ refresh_token: refreshToken })
         .expect(201);
 
       expect(response.body.access_token).toBeDefined();
