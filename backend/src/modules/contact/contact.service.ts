@@ -17,10 +17,23 @@ import { Resend } from "resend";
 
 @Injectable()
 export class ContactService {
-  private resend: Resend;
+  // Lazy-initialized on first use. Not constructed in the constructor so
+  // that booting AppModule (e.g. in tests) does not require RESEND_API_KEY.
+  private resend: Resend | null = null;
 
-  constructor(private readonly prisma: PrismaService) {
-    this.resend = new Resend(process.env.RESEND_API_KEY);
+  constructor(private readonly prisma: PrismaService) {}
+
+  private getResend(): Resend {
+    if (!this.resend) {
+      const key = process.env.RESEND_API_KEY;
+      if (!key) {
+        throw new Error(
+          "RESEND_API_KEY is not set. Required for sending emails.",
+        );
+      }
+      this.resend = new Resend(key);
+    }
+    return this.resend;
   }
 
   private toContactResponseDto(message: ContactMessage): ContactResponseDto {
@@ -101,7 +114,7 @@ export class ContactService {
       const recipient =
         process.env.EMAIL_RECIPIENT || "dancankalerwa@gmail.com";
 
-      const { data: emailData, error } = await this.resend.emails.send({
+      const { data: emailData, error } = await this.getResend().emails.send({
         from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM}>`,
         to: [recipient],
         subject: `📩 New Contact Message from ${data.name}`,

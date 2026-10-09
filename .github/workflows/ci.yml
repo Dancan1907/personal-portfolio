@@ -70,6 +70,7 @@ jobs:
           EMAIL_USER: ci-test-user
           EMAIL_PASSWORD: ci-test-password
           EMAIL_FROM: "CI Test <ci@test.local>"
+          RESEND_API_KEY: re_ci_test_dummy_key
         run: pnpm test --filter=@repo/backend
 
       - name: Build (Backend)
@@ -80,6 +81,7 @@ jobs:
           EMAIL_USER: ci-test-user
           EMAIL_PASSWORD: ci-test-password
           EMAIL_FROM: "CI Test <ci@test.local>"
+          RESEND_API_KEY: re_ci_test_dummy_key
         run: pnpm build --filter=@repo/backend
 
       - name: Build (Frontend)
