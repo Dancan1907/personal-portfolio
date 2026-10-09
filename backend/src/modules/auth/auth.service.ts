@@ -166,7 +166,11 @@ export class AuthService {
     if (user.isTwoFactorEnabled) {
       const tempToken = this.jwtService.sign(
         { sub: user.id, email: user.email, scope: "2fa" },
-        { secret: process.env.JWT_SECRET, expiresIn: "5m" },
+        {
+          secret: process.env.JWT_SECRET,
+          expiresIn: "5m",
+          jwtid: randomBytes(16).toString("hex"),
+        },
       );
 
       this.logger.log(`2FA required for user ${user.email}`);
@@ -379,10 +383,16 @@ export class AuthService {
       this.jwtService.signAsync(payload, {
         secret: process.env.JWT_SECRET,
         expiresIn: "15m",
+        // Unique JWT ID (jti) so two tokens signed with the same payload
+        // and secret within the same second are still distinguishable.
+        // Without it, iat's second-level granularity produces identical
+        // token strings, breaking token rotation.
+        jwtid: randomBytes(16).toString("hex"),
       }),
       this.jwtService.signAsync(payload, {
         secret: process.env.JWT_REFRESH_SECRET,
         expiresIn: "7d",
+        jwtid: randomBytes(16).toString("hex"),
       }),
     ]);
 
