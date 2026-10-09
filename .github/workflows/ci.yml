@@ -1,17 +1,17 @@
 # ============================================================
-# CI Pipeline – Runs on every push and pull request
+# CI Pipeline – Runs on every push to develop/master and every PR
 # ============================================================
 name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master, develop]
   pull_request:
-    branches: [main]
+    branches: [master, develop]
 
 jobs:
   lint-and-test:
-    name: Lint & Test
+    name: Lint, Test & Build
     runs-on: ubuntu-latest
 
     services:
@@ -33,18 +33,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
           version: 9
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      # CRITICAL: generate Prisma Client types before any TS compilation.
+      # Without this, every file importing from @prisma/client fails typecheck.
+      - name: Generate Prisma Client
+        working-directory: backend
+        run: npx prisma generate
 
       - name: Lint (Backend)
         run: pnpm lint --filter=@repo/backend
@@ -61,6 +68,8 @@ jobs:
         run: pnpm test --filter=@repo/backend
 
       - name: Build (Backend)
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
         run: pnpm build --filter=@repo/backend
 
       - name: Build (Frontend)
